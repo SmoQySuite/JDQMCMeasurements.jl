@@ -11,6 +11,9 @@ ShiftedArrays = "1277b4bf-5013-50f5-be3d-901d8477a67a"
 
 [compat]
 julia = "1.8"
+FFTW = "1.5"
+LatticeUtilities = "1.4.2"
+ShiftedArrays = "2.0"
 
 [extras]
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
