@@ -2,7 +2,8 @@
     spin_y_correlation!(SySy::AbstractArray{C}, a::Int, b::Int,
                         unit_cell::UnitCell, lattice::Lattice,
                         Gτ0up::AbstractArray{T,3}, Gτ0dn::AbstractArray{T,3},
-                        Gττup::AbstractArray{T,3}, Gττdn::AbstractArray{T,3}) where {C<:Complex, T<:Number}
+                        Gττup::AbstractArray{T,3}, Gττdn::AbstractArray{T,3},
+                        sgn::T=one(T)) where {C<:Complex, T<:Number}
 
 Calculate the unequal-time spin-spin correlation function in the ``\hat{y}`` direction, given by
 ```math
@@ -26,7 +27,8 @@ i & 0
 function spin_y_correlation!(SySy::AbstractArray{C}, a::Int, b::Int,
                              unit_cell::UnitCell, lattice::Lattice,
                              Gτ0up::AbstractArray{T,3}, Gτ0dn::AbstractArray{T,3},
-                             Gττup::AbstractArray{T,3}, Gττdn::AbstractArray{T,3}) where {C<:Complex, T<:Number}
+                             Gττup::AbstractArray{T,3}, Gττdn::AbstractArray{T,3},
+                             sgn::T=one(T)) where {C<:Complex, T<:Number}
 
     # get dimension of system
     D = unit_cell.D
@@ -49,9 +51,9 @@ function spin_y_correlation!(SySy::AbstractArray{C}, a::Int, b::Int,
         Gup_βmτ0 = @view Gτ0up[:,:,Lτ-l+1] # G₊(β-τ,0)
         Gdn_βmτ0 = @view Gτ0dn[:,:,Lτ-l+1] # G₋(β-τ,0)
         # SySy(τ,r) = SxSx(τ,r) + 1/N sum_i G₊(b,i,β-τ|a,i+r,0)⋅G₋(a,i+r,τ|b,i,0)
-        contract_G0r_Gr0!(SySy_τ, Gup_βmτ0, Gdn_τ0, b_ba, b_ab, 1, unit_cell, lattice)
+        contract_G0r_Gr0!(SySy_τ, Gup_βmτ0, Gdn_τ0, b_ba, b_ab, 1, unit_cell, lattice, sgn)
         # SySy(τ,r) = SxSx(τ,r) + 1/N sum_i G₋(b,i,β-τ|a,i+r,0)⋅G₊(a,i+r,τ|b,i,0)
-        contract_G0r_Gr0!(SySy_τ, Gdn_βmτ0, Gup_τ0, b_ba, b_ab, 1, unit_cell, lattice)
+        contract_G0r_Gr0!(SySy_τ, Gdn_βmτ0, Gup_τ0, b_ba, b_ab, 1, unit_cell, lattice, sgn)
     end
 
     return nothing
@@ -60,7 +62,8 @@ end
 @doc raw"""
     spin_y_correlation!(SySy::AbstractArray{C}, a::Int, b::Int,
                         unit_cell::UnitCell, lattice::Lattice,
-                        Gup::AbstractMatrix{T}, Gdn::AbstractMatrix{T}) where {C<:Complex, T<:Number}
+                        Gup::AbstractMatrix{T}, Gdn::AbstractMatrix{T},
+                        sgn::T=one(T)) where {C<:Complex, T<:Number}
 
 Calculate the equal-time spin-spin correlation function in the ``\hat{y}`` direction, given by
 ```math
@@ -70,7 +73,8 @@ Calculate the equal-time spin-spin correlation function in the ``\hat{y}`` direc
 """
 function spin_y_correlation!(SySy::AbstractArray{C}, a::Int, b::Int,
                              unit_cell::UnitCell, lattice::Lattice,
-                             Gup::AbstractMatrix{T}, Gdn::AbstractMatrix{T}) where {C<:Complex, T<:Number}
+                             Gup::AbstractMatrix{T}, Gdn::AbstractMatrix{T},
+                             sgn::T=one(T)) where {C<:Complex, T<:Number}
 
     # get dimension of system
     D = unit_cell.D
@@ -81,13 +85,13 @@ function spin_y_correlation!(SySy::AbstractArray{C}, a::Int, b::Int,
     b_ba = Bond((a,b), z) # displacement r_b - r_a
     
     # SySy(r) = SxSx(r) - 1/N sum_i G₊(b,i|a,i+r)⋅G₋(a,i+r|b,i)
-    contract_G0r_Gr0!(SySy, Gup, Gdn, b_ba, b_ab, -1, unit_cell, lattice)
+    contract_G0r_Gr0!(SySy, Gup, Gdn, b_ba, b_ab, -1, unit_cell, lattice, sgn)
     # SySy(r) = SxSx(r) - 1/N sum_i G₋(b,i|a,i+r)⋅G₊(a,i+r|b,i)
-    contract_G0r_Gr0!(SySy, Gdn, Gup, b_ba, b_ab, -1, unit_cell, lattice)
+    contract_G0r_Gr0!(SySy, Gdn, Gup, b_ba, b_ab, -1, unit_cell, lattice, sgn)
     # SySy(r) = SySy(r) + 1/N sum_i δ(a,b)⋅δ(r,0)⋅G₊(a,i+r|b,i)
-    contract_δGr0!(SySy, Gup, b_ab, b_ab, 1, unit_cell, lattice)
+    contract_δGr0!(SySy, Gup, b_ab, b_ab, 1, unit_cell, lattice, sgn)
     # SySy(r) = SySy(r) + 1/N sum_i δ(a,b)⋅δ(r,0)⋅G₋(a,i+r|b,i)
-    contract_δGr0!(SySy, Gdn, b_ab, b_ab, 1, unit_cell, lattice)
+    contract_δGr0!(SySy, Gdn, b_ab, b_ab, 1, unit_cell, lattice, sgn)
 
     return nothing
 end

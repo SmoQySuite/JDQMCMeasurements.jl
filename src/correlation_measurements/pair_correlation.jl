@@ -1,7 +1,6 @@
 @doc raw"""
-    pair_correlation!(ΔΔᵀ::AbstractArray{C}, b″::Bond, b′::Bond,
-                      unit_cell::UnitCell, lattice::Lattice,
-                      Gτ0up::AbstractArray{T,3}, Gτ0dn::AbstractArray{T,3}) where {C<:Complex, T<:Number}
+    pair_correlation!(ΔΔᵀ::AbstractArray{C}, b″::Bond, b′::Bond, unit_cell::UnitCell, lattice::Lattice,
+                      Gτ0up::AbstractArray{T,3}, Gτ0dn::AbstractArray{T,3}, sgn::T=one(T)) where {C<:Complex, T<:Number}
 
 Calculate the unequal-time pair correlation function
 ```math
@@ -17,9 +16,8 @@ and the bond  `b′` defines the pair creation operator
 \hat{\Delta}_{\mathbf{i},c,d,\mathbf{r}'}^{\dagger}=\hat{c}_{\uparrow,\mathbf{i}+\mathbf{r}'}^{\dagger}\hat{d}_{\downarrow,\mathbf{i}}^{\dagger}.
 ```
 """
-function pair_correlation!(ΔΔᵀ::AbstractArray{C}, b″::Bond, b′::Bond,
-                           unit_cell::UnitCell, lattice::Lattice,
-                           Gτ0up::AbstractArray{T,3}, Gτ0dn::AbstractArray{T,3}) where {C<:Complex, T<:Number}
+function pair_correlation!(ΔΔᵀ::AbstractArray{C}, b″::Bond, b′::Bond, unit_cell::UnitCell, lattice::Lattice,
+                           Gτ0up::AbstractArray{T,3}, Gτ0dn::AbstractArray{T,3}, sgn::T=one(T)) where {C<:Complex, T<:Number}
 
     # get dimension of system
     D = unit_cell.D
@@ -35,16 +33,15 @@ function pair_correlation!(ΔΔᵀ::AbstractArray{C}, b″::Bond, b′::Bond,
         Gup_τ0 = @view Gτ0up[:,:,l+1] # G₊(τ,0)
         Gdn_τ0 = @view Gτ0dn[:,:,l+1] # G₋(τ,0)
         # ΔΔᵀ(τ,r) = G₊(a,i+r+r″,τ|c,i+r′,0)⋅G₋(b,i+r,τ|d,i,0)
-        contract_Gr0_Gr0!(ΔΔᵀ_τ, Gup_τ0, Gdn_τ0, b″, b′, 1, unit_cell, lattice)
+        contract_Gr0_Gr0!(ΔΔᵀ_τ, Gup_τ0, Gdn_τ0, b″, b′, 1, unit_cell, lattice, sgn)
     end
 
     return nothing
 end
 
 @doc raw"""
-    pair_correlation!(ΔΔᵀ::AbstractArray{C}, b″::Bond, b′::Bond,
-                      unit_cell::UnitCell, lattice::Lattice,
-                      Gup::AbstractMatrix{T}, Gdn::AbstractMatrix{T}) where {C<:Complex, T<:Number}
+    pair_correlation!(ΔΔᵀ::AbstractArray{C}, b″::Bond, b′::Bond, unit_cell::UnitCell, lattice::Lattice,
+                      Gup::AbstractMatrix{T}, Gdn::AbstractMatrix{T}, sgn::T=one(T)) where {C<:Complex, T<:Number}
 
 Calculate the equal-time pair correlation function
 ```math
@@ -60,15 +57,14 @@ and the bond  `b′` defines the pair creation operator
 \hat{\Delta}_{\mathbf{i},c,d,\mathbf{r}'}^{\dagger}=\hat{c}_{\uparrow,\mathbf{i}+\mathbf{r}'}^{\dagger}\hat{d}_{\downarrow,\mathbf{i}}^{\dagger}.
 ```
 """
-function pair_correlation!(ΔΔᵀ::AbstractArray{C}, b″::Bond, b′::Bond,
-                           unit_cell::UnitCell, lattice::Lattice,
-                           Gup::AbstractMatrix{T}, Gdn::AbstractMatrix{T}) where {C<:Complex, T<:Number}
+function pair_correlation!(ΔΔᵀ::AbstractArray{C}, b″::Bond, b′::Bond, unit_cell::UnitCell, lattice::Lattice,
+                           Gup::AbstractMatrix{T}, Gdn::AbstractMatrix{T}, sgn::T=one(T)) where {C<:Complex, T<:Number}
 
     # get dimension of system
     D = unit_cell.D
 
     # ΔΔᵀ(r) = G₊(a,i+r+r″|c,i+r′)⋅G₋(b,i+r|d,i)
-    contract_Gr0_Gr0!(ΔΔᵀ, Gup, Gdn, b″, b′, 1, unit_cell, lattice)
+    contract_Gr0_Gr0!(ΔΔᵀ, Gup, Gdn, b″, b′, 1, unit_cell, lattice, sgn)
 
     return nothing
 end

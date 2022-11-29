@@ -2,7 +2,8 @@
     spin_z_correlation!(SzSz::AbstractArray{C}, a::Int, b::Int,
                         unit_cell::UnitCell, lattice::Lattice,
                         Gτ0up::AbstractArray{T,3}, Gτ0dn::AbstractArray{T,3},
-                        Gττup::AbstractArray{T,3}, Gττdn::AbstractArray{T,3}) where {C<:Complex, T<:Number}
+                        Gττup::AbstractArray{T,3}, Gττdn::AbstractArray{T,3},
+                        sgn::T=one(T)) where {C<:Complex, T<:Number}
 
 Calculate the unequal-time spin-spin correlation function in the ``\hat{z}`` direction, given by
 ```math
@@ -26,7 +27,8 @@ where the spin-``\hat{z}`` operator is given by
 function spin_z_correlation!(SzSz::AbstractArray{C}, a::Int, b::Int,
                              unit_cell::UnitCell, lattice::Lattice,
                              Gτ0up::AbstractArray{T,3}, Gτ0dn::AbstractArray{T,3},
-                             Gττup::AbstractArray{T,3}, Gττdn::AbstractArray{T,3}) where {C<:Complex, T<:Number}
+                             Gττup::AbstractArray{T,3}, Gττdn::AbstractArray{T,3},
+                             sgn::T=one(T)) where {C<:Complex, T<:Number}
 
     # get dimension of system
     D = unit_cell.D
@@ -57,17 +59,17 @@ function spin_z_correlation!(SzSz::AbstractArray{C}, a::Int, b::Int,
         Gup_βmτ0 = @view Gτ0up[:,:,Lτ-l+1] # G₊(β-τ,0)
         Gdn_βmτ0 = @view Gτ0dn[:,:,Lτ-l+1] # G₋(β-τ,0)
         # SzSz(τ,r) = SzSz(τ,r) + 1/N sum_i G₊(a,i+r,τ|a,i+r,τ)⋅G₊(b,i,0|b,i,0)
-        contract_Grr_G00!(SzSz_τ, Gup_ττ, Gup_00, b_aa, b_bb, 1, unit_cell, lattice)
+        contract_Grr_G00!(SzSz_τ, Gup_ττ, Gup_00, b_aa, b_bb, 1, unit_cell, lattice, sgn)
         # SzSz(τ,r) = SzSz(τ,r) + 1/N sum_i G₋(a,i+r,τ|a,i+r,τ)⋅G₋(b,i,0|b,i,0)
-        contract_Grr_G00!(SzSz_τ, Gdn_ττ, Gdn_00, b_aa, b_bb, 1, unit_cell, lattice)
+        contract_Grr_G00!(SzSz_τ, Gdn_ττ, Gdn_00, b_aa, b_bb, 1, unit_cell, lattice, sgn)
         # SzSz(τ,r) = SzSz(τ,r) - 1/N sum_i G₊(a,i+r,τ|a,i+r,τ)⋅G₋(b,i,0|b,i,0)
-        contract_Grr_G00!(SzSz_τ, Gup_ττ, Gdn_00, b_aa, b_bb, -1, unit_cell, lattice)
+        contract_Grr_G00!(SzSz_τ, Gup_ττ, Gdn_00, b_aa, b_bb, -1, unit_cell, lattice, sgn)
         # SzSz(τ,r) = SzSz(τ,r) - 1/N sum_i G₋(a,i+r,τ|a,i+r,τ)⋅G₊(b,i,0|b,i,0)
-        contract_Grr_G00!(SzSz_τ, Gdn_ττ, Gup_00, b_aa, b_bb, -1, unit_cell, lattice)
+        contract_Grr_G00!(SzSz_τ, Gdn_ττ, Gup_00, b_aa, b_bb, -1, unit_cell, lattice, sgn)
         # SzSz(τ,r) = SzSz(τ,r) + 1/N sum_i G₊(b,i,β-τ|a,i+r,0)⋅G₊(a,i+r,τ|b,i,0)
-        contract_G0r_Gr0!(SzSz_τ, Gup_βmτ0, Gup_τ0, b_ba, b_ab, 1, unit_cell, lattice)
+        contract_G0r_Gr0!(SzSz_τ, Gup_βmτ0, Gup_τ0, b_ba, b_ab, 1, unit_cell, lattice, sgn)
         # SzSz(τ,r) = SzSz(τ,r) + 1/N sum_i G₋(b,i,β-τ|a,i+r,0)⋅G₋(a,i+r,τ|b,i,0)
-        contract_G0r_Gr0!(SzSz_τ, Gdn_βmτ0, Gdn_τ0, b_ba, b_ab, 1, unit_cell, lattice)
+        contract_G0r_Gr0!(SzSz_τ, Gdn_βmτ0, Gdn_τ0, b_ba, b_ab, 1, unit_cell, lattice, sgn)
     end
 
     return nothing
@@ -76,7 +78,8 @@ end
 @doc raw"""
     spin_z_correlation!(SzSz::AbstractArray{C}, a::Int, b::Int,
                         unit_cell::UnitCell, lattice::Lattice,
-                        Gup::AbstractMatrix{T}, Gdn::AbstractMatrix{T}) where {C<:Complex, T<:Number}
+                        Gup::AbstractMatrix{T}, Gdn::AbstractMatrix{T},
+                        sgn::T=one(T)) where {C<:Complex, T<:Number}
 
 Calculate the equal-time spin-spin correlation function in the ``\hat{z}`` direction, given by
 ```math
@@ -86,7 +89,8 @@ Calculate the equal-time spin-spin correlation function in the ``\hat{z}`` direc
 """
 function spin_z_correlation!(SzSz::AbstractArray{C}, a::Int, b::Int,
                              unit_cell::UnitCell, lattice::Lattice,
-                             Gup::AbstractMatrix{T}, Gdn::AbstractMatrix{T}) where {C<:Complex, T<:Number}
+                             Gup::AbstractMatrix{T}, Gdn::AbstractMatrix{T},
+                             sgn::T=one(T)) where {C<:Complex, T<:Number}
 
     # get dimension of system
     D = unit_cell.D
@@ -99,21 +103,21 @@ function spin_z_correlation!(SzSz::AbstractArray{C}, a::Int, b::Int,
     b_ba = Bond((a,b), z) # displacement r_b - r_a
 
     # SzSz(r) = SzSz(r) + 1/N sum_i G₊(a,i+r|a,i+r)⋅G₊(b,i|b,i)
-    contract_Grr_G00!(SzSz, Gup, Gup, b_aa, b_bb, 1, unit_cell, lattice)
+    contract_Grr_G00!(SzSz, Gup, Gup, b_aa, b_bb, 1, unit_cell, lattice, sgn)
     # SzSz(r) = SzSz(r) + 1/N sum_i G₋(a,i+r|a,i+r)⋅G₋(b,i|b,i)
-    contract_Grr_G00!(SzSz, Gdn, Gdn, b_aa, b_bb, 1, unit_cell, lattice)
+    contract_Grr_G00!(SzSz, Gdn, Gdn, b_aa, b_bb, 1, unit_cell, lattice, sgn)
     # SzSz(r) = SzSz(r) - 1/N sum_i G₊(a,i+r|a,i+r)⋅G₋(b,i|b,i)
-    contract_Grr_G00!(SzSz, Gup, Gdn, b_aa, b_bb, -1, unit_cell, lattice)
+    contract_Grr_G00!(SzSz, Gup, Gdn, b_aa, b_bb, -1, unit_cell, lattice, sgn)
     # SzSz(r) = SzSz(r) - 1/N sum_i G₋(a,i+r|a,i+r)⋅G₊(b,i|b,i)
-    contract_Grr_G00!(SzSz, Gdn, Gup, b_aa, b_bb, -1, unit_cell, lattice)
+    contract_Grr_G00!(SzSz, Gdn, Gup, b_aa, b_bb, -1, unit_cell, lattice, sgn)
     # SzSz(r) = SzSz(r) - 1/N sum_i G₊(b,i|a,i+r)⋅G₊(a,i+r|b,i)
-    contract_G0r_Gr0!(SzSz, Gup, Gup, b_ba, b_ab, -1, unit_cell, lattice)
+    contract_G0r_Gr0!(SzSz, Gup, Gup, b_ba, b_ab, -1, unit_cell, lattice, sgn)
     # SzSz(r) = SzSz(r) - 1/N sum_i G₋(b,i|a,i+r)⋅G₋(a,i+r|b,i)
-    contract_G0r_Gr0!(SzSz, Gdn, Gdn, b_ba, b_ab, -1, unit_cell, lattice)
+    contract_G0r_Gr0!(SzSz, Gdn, Gdn, b_ba, b_ab, -1, unit_cell, lattice, sgn)
     # SzSz(r) = SzSz(r) + 1/N sum_i δ(a,b)⋅δ(r,0)⋅G₊(a,i+r|b,i)
-    contract_δGr0!(SzSz, Gup, b_ab, b_ab, 1, unit_cell, lattice)
+    contract_δGr0!(SzSz, Gup, b_ab, b_ab, 1, unit_cell, lattice, sgn)
     # SzSz(r) = SzSz(r) + 1/N sum_i δ(a,b)⋅δ(r,0)⋅G₋(a,i+r|b,i)
-    contract_δGr0!(SzSz, Gdn, b_ab, b_ab, 1, unit_cell, lattice)
+    contract_δGr0!(SzSz, Gdn, b_ab, b_ab, 1, unit_cell, lattice, sgn)
 
     return nothing
 end

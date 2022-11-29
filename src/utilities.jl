@@ -1,6 +1,6 @@
 @doc raw"""
     contract_G00!(S::AbstractArray{C}, G::AbstractMatrix{T}, a::Int, b::Int, α::Int,
-                  unit_cell::UnitCell{E}, lattice::Lattice) where {C<:Complex, T<:Number, E<:AbstractFloat}
+                  unit_cell::UnitCell{E}, lattice::Lattice, sgn::T=one(T)) where {C<:Complex, T<:Number, E<:AbstractFloat}
 
 Evaluate the sum
 ```math
@@ -11,7 +11,7 @@ S_{\mathbf{r}} := S_{\mathbf{r}} + \frac{\alpha}{N}\sum_{\mathbf{i}}G_{\sigma,\m
 for all ``\mathbf{r}.``
 """
 function contract_G00!(S::AbstractArray{C}, G::AbstractMatrix{T}, a::Int, b::Int, α::Int,
-                       unit_cell::UnitCell{E}, lattice::Lattice) where {C<:Complex, T<:Number, E<:AbstractFloat}
+                       unit_cell::UnitCell{E}, lattice::Lattice, sgn::T=one(T)) where {C<:Complex, T<:Number, E<:AbstractFloat}
     
     # number of unit cells
     N  = lattice.N
@@ -24,7 +24,7 @@ function contract_G00!(S::AbstractArray{C}, G::AbstractMatrix{T}, a::Int, b::Int
 
     # evaluate sum S(r) = S(r) + α/N sum_i G(a,i|b,i)
     tr_Gab = tr(Gab) # trace of matrix
-    αN⁻¹ = α/N
+    αN⁻¹ = sgn * α/N
     @. S += αN⁻¹ * tr_Gab
 
     return nothing
@@ -33,7 +33,7 @@ end
 
 @doc raw"""
     contract_Gr0!(S::AbstractArray{C}, G::AbstractMatrix{T}, r′::Bond, α::Int,
-                  unit_cell::UnitCell{E}, lattice::Lattice) where {C<:Complex, T<:Number, E<:AbstractFloat}
+                  unit_cell::UnitCell{E}, lattice::Lattice, sgn::T=one(T)) where {C<:Complex, T<:Number, E<:AbstractFloat}
 
 Evaluate the sum
 ```math
@@ -42,7 +42,7 @@ S_{\mathbf{r}}:=S_{\mathbf{r}}+\frac{\alpha}{N}\sum_{\mathbf{i}}G_{\sigma,\mathb
 for all ``\mathbf{r},`` where the bond `r′` represents the static displacement ``\mathbf{r}_1+(\mathbf{r}_a-\mathbf{r}_b).``
 """
 function contract_Gr0!(S::AbstractArray{C}, G::AbstractMatrix{T}, r′::Bond, α::Int,
-                       unit_cell::UnitCell{E}, lattice::Lattice) where {C<:Complex, T<:Number, E<:AbstractFloat}
+                       unit_cell::UnitCell{E}, lattice::Lattice, sgn::T=one(T)) where {C<:Complex, T<:Number, E<:AbstractFloat}
 
     # get bond definition
     r₁ = r′.displacement
@@ -68,7 +68,7 @@ function contract_Gr0!(S::AbstractArray{C}, G::AbstractMatrix{T}, r′::Bond, α
 
     # evaluate S(r) = S(r) + α/N sum_i G(a,i+r+r₁|b,i)
     i = reshape(1:N, L)
-    αN⁻¹ = α/N
+    αN⁻¹ = sgn * α/N
     @fastmath @inbounds for r in CartesianIndices(S)
         @. tmp = -(r.I-1+r₁)
         iprpr₁ = sa.circshift(i, tmp)
@@ -83,7 +83,7 @@ end
 
 @doc raw"""
     contract_δGr0!(S::AbstractArray{C}, G::AbstractMatrix{T}, δ::Bond, α::Int,
-                   unit_cell::UnitCell{E}, lattice::Lattice) where {C<:Complex, T<:Number, E<:AbstractFloat}
+                   unit_cell::UnitCell{E}, lattice::Lattice, sgn::T=one(T)) where {C<:Complex, T<:Number, E<:AbstractFloat}
 
 Evaluate the sum
 ```math
@@ -93,7 +93,7 @@ for all ``\mathbf{r},`` where the bond `δ` represents the static displacement `
 and the bond `r′` represents the static displacement ``\mathbf{r}_1+(\mathbf{r}_c-\mathbf{r}_d).``
 """
 function contract_δGr0!(S::AbstractArray{C}, G::AbstractMatrix{T}, δ::Bond, r′::Bond, α::Int,
-                        unit_cell::UnitCell{E}, lattice::Lattice) where {C<:Complex, T<:Number, E<:AbstractFloat}
+                        unit_cell::UnitCell{E}, lattice::Lattice, sgn::T=one(T)) where {C<:Complex, T<:Number, E<:AbstractFloat}
 
     d, c = δ.orbitals
     r₂ = δ.displacement
@@ -123,7 +123,7 @@ function contract_δGr0!(S::AbstractArray{C}, G::AbstractMatrix{T}, δ::Bond, r�
         R₂ = loc_to_unitcell(tmp, lattice)
 
         # α/N
-        αN⁻¹ = α/N
+        αN⁻¹ = sgn * α/N
 
         # get indices to iterate over
         i = reshape(1:N, L) # i
@@ -144,7 +144,7 @@ end
 
 @doc raw"""
     contract_Grr_G00!(S::AbstractArray{C}, G₂::AbstractMatrix{T}, G₁::AbstractMatrix{T}, b₂::Bond, b₁::Bond,
-                      α::Int, unit_cell::UnitCell{E}, lattice::Lattice) where {C<:Complex, T<:Number, E<:AbstractFloat}
+                      α::Int, unit_cell::UnitCell{E}, lattice::Lattice, sgn::T=one(T)) where {C<:Complex, T<:Number, E<:AbstractFloat}
 
 Evaluate the sum
 ```math
@@ -154,7 +154,7 @@ for all ``\mathbf{r},`` where the bond `b₂` represents the static displacement
 and the bond `b₁` represents the static displacement ``\mathbf{r}_1 + (\mathbf{r}_c - \mathbf{r}_d).``
 """
 function contract_Grr_G00!(S::AbstractArray{C}, G₂::AbstractMatrix{T}, G₁::AbstractMatrix{T}, b₂::Bond, b₁::Bond,
-                           α::Int, unit_cell::UnitCell{E}, lattice::Lattice) where {C<:Complex, T<:Number, E<:AbstractFloat}
+                           α::Int, unit_cell::UnitCell{E}, lattice::Lattice, sgn::T=one(T)) where {C<:Complex, T<:Number, E<:AbstractFloat}
 
     b, a = b₂.orbitals
     r₂   = b₂.displacement
@@ -180,7 +180,7 @@ function contract_Grr_G00!(S::AbstractArray{C}, G₂::AbstractMatrix{T}, G₁::A
     i = reshape(1:N, L)
     @. tmp = -r₁
     ipr₁ = sa.circshift(i, tmp) # i + r₁
-    αN⁻¹ = α/N
+    αN⁻¹ = sgn * α/N
     # iterate over displacements
     @fastmath @inbounds for r in CartesianIndices(S)
         @. tmp = -(r.I-1)
@@ -202,7 +202,7 @@ end
     contract_Grr_G00!(S::AbstractArray{C}, G₂::AbstractMatrix{T}, G₁::AbstractMatrix{T},
                       a::Int, b::Int, c::Int, d::Int,
                       r₄::AbstractVector{Int}, r₃::AbstractVector{Int}, r₂::AbstractVector{Int}, r₁::AbstractVector{Int},
-                      α::Int, unit_cell::UnitCell{E}, lattice::Lattice) where {C<:Complex, T<:Number, E<:AbstractFloat}
+                      α::Int, unit_cell::UnitCell{E}, lattice::Lattice, sgn::T=one(T)) where {C<:Complex, T<:Number, E<:AbstractFloat}
 
 Evaluate the sum
 ```math
@@ -213,7 +213,7 @@ for all ``\mathbf{r}.``
 function contract_Grr_G00!(S::AbstractArray{C}, G₂::AbstractMatrix{T}, G₁::AbstractMatrix{T},
                            a::Int, b::Int, c::Int, d::Int,
                            r₄::AbstractVector{Int}, r₃::AbstractVector{Int}, r₂::AbstractVector{Int}, r₁::AbstractVector{Int},
-                           α::Int, unit_cell::UnitCell{E}, lattice::Lattice) where {C<:Complex, T<:Number, E<:AbstractFloat}
+                           α::Int, unit_cell::UnitCell{E}, lattice::Lattice, sgn::T=one(T)) where {C<:Complex, T<:Number, E<:AbstractFloat}
 
     # number of unit cells
     N = lattice.N
@@ -232,7 +232,7 @@ function contract_Grr_G00!(S::AbstractArray{C}, G₂::AbstractMatrix{T}, G₁::A
     G₁_cd = @view G₁[c:n:end,d:n:end]
 
     # α/N
-    αN⁻¹ = α/N
+    αN⁻¹ = sgn * α/N
 
     i = reshape(1:N, L) # i
     @. tmp = -r₂
@@ -260,7 +260,7 @@ end
     contract_G00_Grr!(S::AbstractArray{C}, G₂::AbstractMatrix{T}, G₁::AbstractMatrix{T},
                       a::Int, b::Int, c::Int, d::Int,
                       r₄::AbstractVector{Int}, r₃::AbstractVector{Int}, r₂::AbstractVector{Int}, r₁::AbstractVector{Int},
-                      α::Int, unit_cell::UnitCell{E}, lattice::Lattice) where {C<:Complex, T<:Number, E<:AbstractFloat}
+                      α::Int, unit_cell::UnitCell{E}, lattice::Lattice, sgn::T=one(T)) where {C<:Complex, T<:Number, E<:AbstractFloat}
 
 Evaluate the sum
 ```math
@@ -271,7 +271,7 @@ for all ``\mathbf{r}.``
 function contract_G00_Grr!(S::AbstractArray{C}, G₂::AbstractMatrix{T}, G₁::AbstractMatrix{T},
                            a::Int, b::Int, c::Int, d::Int,
                            r₄::AbstractVector{Int}, r₃::AbstractVector{Int}, r₂::AbstractVector{Int}, r₁::AbstractVector{Int},
-                           α::Int, unit_cell::UnitCell{E}, lattice::Lattice) where {C<:Complex, T<:Number, E<:AbstractFloat}
+                           α::Int, unit_cell::UnitCell{E}, lattice::Lattice, sgn::T=one(T)) where {C<:Complex, T<:Number, E<:AbstractFloat}
 
     # number of unit cells
     N = lattice.N
@@ -290,7 +290,7 @@ function contract_G00_Grr!(S::AbstractArray{C}, G₂::AbstractMatrix{T}, G₁::A
     G₁_cd = @view G₁[c:n:end,d:n:end]
 
     # α/N
-    αN⁻¹ = α/N
+    αN⁻¹ = sgn * α/N
 
     i = reshape(1:N, L) # i
     @. tmp = -r₄
@@ -316,7 +316,7 @@ end
 
 @doc raw"""
     contract_Gr0_Gr0!(S::AbstractArray{C}, G₂::AbstractMatrix{T}, G₁::AbstractMatrix{T}, b₂::Bond, b₁::Bond,
-                      α::Int, unit_cell::UnitCell{E}, lattice::Lattice) where {C<:Complex, T<:Number, E<:AbstractFloat}
+                      α::Int, unit_cell::UnitCell{E}, lattice::Lattice, sgn::T=one(T)) where {C<:Complex, T<:Number, E<:AbstractFloat}
 
 Evaluate the sum
 ```math
@@ -326,7 +326,7 @@ for all ``\mathbf{r},`` where the bond `b₂` represents the static displacement
 and the bond `b₁` represents the static displacement ``\mathbf{r}_1 + (\mathbf{r}_c - \mathbf{r}_d).``
 """
 function contract_Gr0_Gr0!(S::AbstractArray{C}, G₂::AbstractMatrix{T}, G₁::AbstractMatrix{T}, b₂::Bond, b₁::Bond,
-                           α::Int, unit_cell::UnitCell{E}, lattice::Lattice) where {C<:Complex, T<:Number, E<:AbstractFloat}
+                           α::Int, unit_cell::UnitCell{E}, lattice::Lattice, sgn::T=one(T)) where {C<:Complex, T<:Number, E<:AbstractFloat}
 
     b, a = b₂.orbitals
     r₂   = b₂.displacement
@@ -352,7 +352,7 @@ function contract_Gr0_Gr0!(S::AbstractArray{C}, G₂::AbstractMatrix{T}, G₁::A
     i = reshape(1:N, L)
     @. tmp = -r₁
     ipr₁ = sa.circshift(i, tmp) # i + r₁
-    αN⁻¹ = α/N
+    αN⁻¹ = sgn * α/N
     # iterate over displacements
     @fastmath @inbounds for r in CartesianIndices(S)
         @. tmp = -(r.I-1)
@@ -374,7 +374,7 @@ end
     contract_Gr0_Gr0!(S::AbstractArray{C}, G₂::AbstractMatrix{T}, G₁::AbstractMatrix{T},
                       a::Int, b::Int, c::Int, d::Int,
                       r₄::AbstractVector{Int}, r₃::AbstractVector{Int}, r₂::AbstractVector{Int}, r₁::AbstractVector{Int},
-                      α::Int, unit_cell::UnitCell{E}, lattice::Lattice) where {C<:Complex, T<:Number, E<:AbstractFloat}
+                      α::Int, unit_cell::UnitCell{E}, lattice::Lattice, sgn::T=one(T)) where {C<:Complex, T<:Number, E<:AbstractFloat}
 
 Evaluate the sum
 ```math
@@ -385,7 +385,7 @@ for all ``\mathbf{r}.``
 function contract_Gr0_Gr0!(S::AbstractArray{C}, G₂::AbstractMatrix{T}, G₁::AbstractMatrix{T},
                            a::Int, b::Int, c::Int, d::Int,
                            r₄::AbstractVector{Int}, r₃::AbstractVector{Int}, r₂::AbstractVector{Int}, r₁::AbstractVector{Int},
-                           α::Int, unit_cell::UnitCell{E}, lattice::Lattice) where {C<:Complex, T<:Number, E<:AbstractFloat}
+                           α::Int, unit_cell::UnitCell{E}, lattice::Lattice, sgn::T=one(T)) where {C<:Complex, T<:Number, E<:AbstractFloat}
 
     # number of unit cells
     N = lattice.N
@@ -404,7 +404,7 @@ function contract_Gr0_Gr0!(S::AbstractArray{C}, G₂::AbstractMatrix{T}, G₁::A
     G₁_cd = @view G₁[c:n:end,d:n:end]
 
     # α/N
-    αN⁻¹ = α/N
+    αN⁻¹ = sgn * α/N
 
     i = reshape(1:N, L) # i
     @. tmp = -r₃
@@ -432,7 +432,7 @@ end
     contract_G0r_G0r!(S::AbstractArray{C}, G₂::AbstractMatrix{T}, G₁::AbstractMatrix{T},
                       a::Int, b::Int, c::Int, d::Int,
                       r₄::AbstractVector{Int}, r₃::AbstractVector{Int}, r₂::AbstractVector{Int}, r₁::AbstractVector{Int},
-                      α::Int, unit_cell::UnitCell{E}, lattice::Lattice) where {C<:Complex, T<:Number, E<:AbstractFloat}
+                      α::Int, unit_cell::UnitCell{E}, lattice::Lattice, sgn::T=one(T)) where {C<:Complex, T<:Number, E<:AbstractFloat}
 
 Evaluate the sum
 ```math
@@ -443,7 +443,7 @@ for all ``\mathbf{r}.``
 function contract_G0r_G0r!(S::AbstractArray{C}, G₂::AbstractMatrix{T}, G₁::AbstractMatrix{T},
                            a::Int, b::Int, c::Int, d::Int,
                            r₄::AbstractVector{Int}, r₃::AbstractVector{Int}, r₂::AbstractVector{Int}, r₁::AbstractVector{Int},
-                           α::Int, unit_cell::UnitCell{E}, lattice::Lattice) where {C<:Complex, T<:Number, E<:AbstractFloat}
+                           α::Int, unit_cell::UnitCell{E}, lattice::Lattice, sgn::T=one(T)) where {C<:Complex, T<:Number, E<:AbstractFloat}
 
     # number of unit cells
     N = lattice.N
@@ -462,7 +462,7 @@ function contract_G0r_G0r!(S::AbstractArray{C}, G₂::AbstractMatrix{T}, G₁::A
     G₁_cd = @view G₁[c:n:end,d:n:end]
 
     # α/N
-    αN⁻¹ = α/N
+    αN⁻¹ = sgn * α/N
 
     i = reshape(1:N, L) # i
     @. tmp = -r₄
@@ -488,7 +488,7 @@ end
 
 @doc raw"""
     contract_G0r_Gr0!(S::AbstractArray{C}, G₂::AbstractMatrix{T}, G₁::AbstractMatrix{T}, b₂::Bond, b₁::Bond,
-                      α::Int, unit_cell::UnitCell{E}, lattice::Lattice) where {C<:Complex, T<:Number, E<:AbstractFloat}
+                      α::Int, unit_cell::UnitCell{E}, lattice::Lattice, sgn::T=one(T)) where {C<:Complex, T<:Number, E<:AbstractFloat}
 
 Evaluate the sum
 ```math
@@ -498,7 +498,7 @@ for all ``\mathbf{r},`` where the bond `b₂` represents the static displacement
 and the bond `b₁` represents the static displacement ``\mathbf{r}_1 + (\mathbf{r}_c - \mathbf{r}_d).``
 """
 function contract_G0r_Gr0!(S::AbstractArray{C}, G₂::AbstractMatrix{T}, G₁::AbstractMatrix{T}, b₂::Bond, b₁::Bond,
-                           α::Int, unit_cell::UnitCell{E}, lattice::Lattice) where {C<:Complex, T<:Number, E<:AbstractFloat}
+                           α::Int, unit_cell::UnitCell{E}, lattice::Lattice, sgn::T=one(T)) where {C<:Complex, T<:Number, E<:AbstractFloat}
 
     b, a = b₂.orbitals
     r₂   = b₂.displacement
@@ -524,7 +524,7 @@ function contract_G0r_Gr0!(S::AbstractArray{C}, G₂::AbstractMatrix{T}, G₁::A
     i = reshape(1:N, L)
     @. tmp = -r₂
     ipr₂ = sa.circshift(i, tmp) # i + r₂
-    αN⁻¹ = α/N
+    αN⁻¹ = sgn * α/N
     # iterate over displacements
     @fastmath @inbounds for r in CartesianIndices(S)
         @. tmp = -(r.I-1)
@@ -546,7 +546,7 @@ end
     contract_G0r_Gr0!(S::AbstractArray{C}, G₂::AbstractMatrix{T}, G₁::AbstractMatrix{T},
                       a::Int, b::Int, c::Int, d::Int,
                       r₄::AbstractVector{Int}, r₃::AbstractVector{Int}, r₂::AbstractVector{Int}, r₁::AbstractVector{Int},
-                      α::Int, unit_cell::UnitCell{E}, lattice::Lattice) where {C<:Complex, T<:Number, E<:AbstractFloat}
+                      α::Int, unit_cell::UnitCell{E}, lattice::Lattice, sgn::T=one(T)) where {C<:Complex, T<:Number, E<:AbstractFloat}
 
 Evaluate the sum
 ```math
@@ -557,7 +557,7 @@ for all ``\mathbf{r}.``
 function contract_G0r_Gr0!(S::AbstractArray{C}, G₂::AbstractMatrix{T}, G₁::AbstractMatrix{T},
                            a::Int, b::Int, c::Int, d::Int,
                            r₄::AbstractVector{Int}, r₃::AbstractVector{Int}, r₂::AbstractVector{Int}, r₁::AbstractVector{Int},
-                           α::Int, unit_cell::UnitCell{E}, lattice::Lattice) where {C<:Complex, T<:Number, E<:AbstractFloat}
+                           α::Int, unit_cell::UnitCell{E}, lattice::Lattice, sgn::T=one(T)) where {C<:Complex, T<:Number, E<:AbstractFloat}
 
     # number of unit cells
     N = lattice.N
@@ -576,7 +576,7 @@ function contract_G0r_Gr0!(S::AbstractArray{C}, G₂::AbstractMatrix{T}, G₁::A
     G₁_cd = @view G₁[c:n:end,d:n:end]
 
     # α/N
-    αN⁻¹ = α/N
+    αN⁻¹ = sgn * α/N
 
     i = reshape(1:N, L) # i
     @. tmp = -r₄
@@ -604,7 +604,7 @@ end
     contract_Gr0_G0r!(S::AbstractArray{C}, G₂::AbstractMatrix{T}, G₁::AbstractMatrix{T},
                       a::Int, b::Int, c::Int, d::Int,
                       r₄::AbstractVector{Int}, r₃::AbstractVector{Int}, r₂::AbstractVector{Int}, r₁::AbstractVector{Int},
-                      α::Int, unit_cell::UnitCell{E}, lattice::Lattice) where {C<:Complex, T<:Number, E<:AbstractFloat}
+                      α::Int, unit_cell::UnitCell{E}, lattice::Lattice, sgn::T=one(T)) where {C<:Complex, T<:Number, E<:AbstractFloat}
 
 Evaluate the sum
 ```math
@@ -615,7 +615,7 @@ for all ``\mathbf{r}.``
 function contract_Gr0_G0r!(S::AbstractArray{C}, G₂::AbstractMatrix{T}, G₁::AbstractMatrix{T},
                            a::Int, b::Int, c::Int, d::Int,
                            r₄::AbstractVector{Int}, r₃::AbstractVector{Int}, r₂::AbstractVector{Int}, r₁::AbstractVector{Int},
-                           α::Int, unit_cell::UnitCell{E}, lattice::Lattice) where {C<:Complex, T<:Number, E<:AbstractFloat}
+                           α::Int, unit_cell::UnitCell{E}, lattice::Lattice, sgn::T=one(T)) where {C<:Complex, T<:Number, E<:AbstractFloat}
 
     # number of unit cells
     N = lattice.N
@@ -634,7 +634,7 @@ function contract_Gr0_G0r!(S::AbstractArray{C}, G₂::AbstractMatrix{T}, G₁::A
     G₁_cd = @view G₁[c:n:end,d:n:end]
 
     # α/N
-    αN⁻¹ = α/N
+    αN⁻¹ = sgn * α/N
 
     i = reshape(1:N, L) # i
     @. tmp = -r₃

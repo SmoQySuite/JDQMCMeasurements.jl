@@ -2,7 +2,8 @@
     density_correlation!(DD::AbstractArray{C}, a::Int, b::Int,
                          unit_cell::UnitCell, lattice::Lattice,
                          Gτ0up::AbstractArray{T,3}, Gτ0dn::AbstractArray{T,3},
-                         Gττup::AbstractArray{T,3}, Gττdn::AbstractArray{T,3}) where {C<:Complex, T<:Number}
+                         Gττup::AbstractArray{T,3}, Gττdn::AbstractArray{T,3},
+                         sgn::T=one(T)) where {C<:Complex, T<:Number}
 
 Calculate the unequal time density-density (charge) correlation function
 ```math
@@ -21,7 +22,8 @@ for all imaginary time slices ``\tau = \Delta\tau\cdot l`` respectively.
 function density_correlation!(DD::AbstractArray{C}, a::Int, b::Int,
                               unit_cell::UnitCell, lattice::Lattice,
                               Gτ0up::AbstractArray{T,3}, Gτ0dn::AbstractArray{T,3},
-                              Gττup::AbstractArray{T,3}, Gττdn::AbstractArray{T,3}) where {C<:Complex, T<:Number}
+                              Gττup::AbstractArray{T,3}, Gττdn::AbstractArray{T,3},
+                              sgn::T=one(T)) where {C<:Complex, T<:Number}
     
     # get dimension of system
     D = unit_cell.D
@@ -52,27 +54,27 @@ function density_correlation!(DD::AbstractArray{C}, a::Int, b::Int,
         Gup_βmτ0 = @view Gτ0up[:,:,Lτ-l+1] # G₊(β-τ,0)
         Gdn_βmτ0 = @view Gτ0dn[:,:,Lτ-l+1] # G₋(β-τ,0)
         # DD(τ,r) = DD(τ,r) + 4
-        @. DD_τ = DD_τ + 4
+        @. DD_τ = DD_τ + 4 * sgn
         # DD(τ,r) = DD(τ,r) - 2/N sum_i G₊(a,i,τ|a,i,τ)
-        contract_G00!(DD_τ, Gup_ττ, a, a, -2, unit_cell, lattice)
+        contract_G00!(DD_τ, Gup_ττ, a, a, -2, unit_cell, lattice, sgn)
         # DD(τ,r) = DD(τ,r) - 2/N sum_i G₋(a,i,τ|a,i,τ)
-        contract_G00!(DD_τ, Gdn_ττ, a, a, -2, unit_cell, lattice)
+        contract_G00!(DD_τ, Gdn_ττ, a, a, -2, unit_cell, lattice, sgn)
         # DD(τ,r) = DD(τ,r) - 2/N sum_i G₊(b,i,0|b,i,0)
-        contract_G00!(DD_τ, Gup_00, b, b, -2, unit_cell, lattice)
+        contract_G00!(DD_τ, Gup_00, b, b, -2, unit_cell, lattice, sgn)
         # DD(τ,r) = DD(τ,r) - 2/N sum_i G₋(b,i,0|b,i,0)
-        contract_G00!(DD_τ, Gdn_00, b, b, -2, unit_cell, lattice)
+        contract_G00!(DD_τ, Gdn_00, b, b, -2, unit_cell, lattice, sgn)
         # DD(τ,r) = DD(τ,r) + 1/N sum_i G₊(a,i+r,τ|a,i+r,τ)⋅G₊(b,i,0|b,i,0)
-        contract_Grr_G00!(DD_τ, Gup_ττ, Gup_00, b_aa, b_bb, 1, unit_cell, lattice)
+        contract_Grr_G00!(DD_τ, Gup_ττ, Gup_00, b_aa, b_bb, 1, unit_cell, lattice, sgn)
         # DD(τ,r) = DD(τ,r) + 1/N sum_i G₋(a,i+r,τ|a,i+r,τ)⋅G₋(b,i,0|b,i,0)
-        contract_Grr_G00!(DD_τ, Gdn_ττ, Gdn_00, b_aa, b_bb, 1, unit_cell, lattice)
+        contract_Grr_G00!(DD_τ, Gdn_ττ, Gdn_00, b_aa, b_bb, 1, unit_cell, lattice, sgn)
         # DD(τ,r) = DD(τ,r) + 1/N sum_i G₊(a,i+r,τ|a,i+r,τ)⋅G₋(b,i,0|b,i,0)
-        contract_Grr_G00!(DD_τ, Gup_ττ, Gdn_00, b_aa, b_bb, 1, unit_cell, lattice)
+        contract_Grr_G00!(DD_τ, Gup_ττ, Gdn_00, b_aa, b_bb, 1, unit_cell, lattice, sgn)
         # DD(τ,r) = DD(τ,r) + 1/N sum_i G₋(a,i+r,τ|a,i+r,τ)⋅G₊(b,i,0|b,i,0)
-        contract_Grr_G00!(DD_τ, Gdn_ττ, Gup_00, b_aa, b_bb, 1, unit_cell, lattice)
+        contract_Grr_G00!(DD_τ, Gdn_ττ, Gup_00, b_aa, b_bb, 1, unit_cell, lattice, sgn)
         # DD(τ,r) = DD(τ,r) + 1/N sum_i G₊(b,i,β-τ|a,i+r,0)⋅G₊(a,i+r,τ|b,i,0)
-        contract_G0r_Gr0!(DD_τ, Gup_βmτ0, Gup_τ0, b_ba, b_ab, 1, unit_cell, lattice)
+        contract_G0r_Gr0!(DD_τ, Gup_βmτ0, Gup_τ0, b_ba, b_ab, 1, unit_cell, lattice, sgn)
         # DD(τ,r) = DD(τ,r) + 1/N sum_i G₋(b,i,β-τ|a,i+r,0)⋅G₋(a,i+r,τ|b,i,0)
-        contract_G0r_Gr0!(DD_τ, Gdn_βmτ0, Gdn_τ0, b_ba, b_ab, 1, unit_cell, lattice)
+        contract_G0r_Gr0!(DD_τ, Gdn_βmτ0, Gdn_τ0, b_ba, b_ab, 1, unit_cell, lattice, sgn)
     end
     
     return nothing
@@ -81,7 +83,8 @@ end
 @doc raw"""
     density_correlation!(DD::AbstractArray{C}, a::Int, b::Int,
                          unit_cell::UnitCell, lattice::Lattice,
-                         Gup::AbstractMatrix{T}, Gdn::AbstractMatrix{T}) where {C<:Complex, T<:Number}
+                         Gup::AbstractMatrix{T}, Gdn::AbstractMatrix{T},
+                         sgn::T=one(T)) where {C<:Complex, T<:Number}
 
 Calculate the equaltime density-density (charge) correlation funciton
 ```math
@@ -94,7 +97,8 @@ The array `Gup` and `Gdn` are the eqaultime Green's functions ``G_{\uparrow}(0,0
 """
 function density_correlation!(DD::AbstractArray{C}, a::Int, b::Int,
                               unit_cell::UnitCell, lattice::Lattice,
-                              Gup::AbstractMatrix{T}, Gdn::AbstractMatrix{T}) where {C<:Complex, T<:Number}
+                              Gup::AbstractMatrix{T}, Gdn::AbstractMatrix{T},
+                              sgn::T=one(T)) where {C<:Complex, T<:Number}
 
     # get dimension of system
     D = unit_cell.D
@@ -107,31 +111,31 @@ function density_correlation!(DD::AbstractArray{C}, a::Int, b::Int,
     b_ba = Bond((a,b), z) # displacement r_b - r_a
 
     # DD(r) = DD(r) + 4
-    @. DD = DD + 4
+    @. DD = DD + 4 * sgn
     # DD(r) = DD(r) - 2/N sum_i G₊(a,i|a,i)
-    contract_G00!(DD, Gup, a, a, -2, unit_cell, lattice)
+    contract_G00!(DD, Gup, a, a, -2, unit_cell, lattice, sgn)
     # DD(r) = DD(r) - 2/N sum_i G₋(a,i|a,i)
-    contract_G00!(DD, Gdn, a, a, -2, unit_cell, lattice)
+    contract_G00!(DD, Gdn, a, a, -2, unit_cell, lattice, sgn)
     # DD(r) = DD(r) - 2/N sum_i G₊(b,i|b,i)
-    contract_G00!(DD, Gup, b, b, -2, unit_cell, lattice)
+    contract_G00!(DD, Gup, b, b, -2, unit_cell, lattice, sgn)
     # DD(r) = DD(r) - 2/N sum_i G₋(b,i|b,i)
-    contract_G00!(DD, Gdn, b, b, -2, unit_cell, lattice)
+    contract_G00!(DD, Gdn, b, b, -2, unit_cell, lattice, sgn)
     # DD(r) = DD(r) + 1/N sum_i G₊(a,i+r|a,i+r)⋅G₊(b,i|b,i)
-    contract_Grr_G00!(DD, Gup, Gup, b_aa, b_bb, 1, unit_cell, lattice)
+    contract_Grr_G00!(DD, Gup, Gup, b_aa, b_bb, 1, unit_cell, lattice, sgn)
     # DD(r) = DD(r) + 1/N sum_i G₋(a,i+r|a,i+r)⋅G₋(b,i|b,i)
-    contract_Grr_G00!(DD, Gdn, Gdn, b_aa, b_bb, 1, unit_cell, lattice)
+    contract_Grr_G00!(DD, Gdn, Gdn, b_aa, b_bb, 1, unit_cell, lattice, sgn)
     # DD(r) = DD(r) + 1/N sum_i G₊(a,i+r|a,i+r)⋅G₋(b,i|b,i)
-    contract_Grr_G00!(DD, Gup, Gdn, b_aa, b_bb, 1, unit_cell, lattice)
+    contract_Grr_G00!(DD, Gup, Gdn, b_aa, b_bb, 1, unit_cell, lattice, sgn)
     # DD(r) = DD(r) + 1/N sum_i G₋(a,i+r|a,i+r)⋅G₊(b,i|b,i)
-    contract_Grr_G00!(DD, Gdn, Gup, b_aa, b_bb, 1, unit_cell, lattice)
+    contract_Grr_G00!(DD, Gdn, Gup, b_aa, b_bb, 1, unit_cell, lattice, sgn)
     # DD(r) = DD(r) - 1/N sum_i G₊(b,i|a,i+r)⋅G₊(a,i+r|b,i)
-    contract_G0r_Gr0!(DD, Gup, Gup, b_ba, b_ab, -1, unit_cell, lattice)
+    contract_G0r_Gr0!(DD, Gup, Gup, b_ba, b_ab, -1, unit_cell, lattice, sgn)
     # DD(r) = DD(r) - 1/N sum_i G₋(b,i|a,i+r)⋅G₋(a,i+r|b,i)
-    contract_G0r_Gr0!(DD, Gdn, Gdn, b_ba, b_ab, -1, unit_cell, lattice)
+    contract_G0r_Gr0!(DD, Gdn, Gdn, b_ba, b_ab, -1, unit_cell, lattice, sgn)
     # DD(r) = DD(r) + 1/N sum_i δ(r,0)⋅δ(a,b)⋅G₊(a,i+r|b,i)
-    contract_δGr0!(DD, Gup, b_ab, b_ab, 1, unit_cell, lattice)
+    contract_δGr0!(DD, Gup, b_ab, b_ab, 1, unit_cell, lattice, sgn)
     # DD(r) = DD(r) + 1/N sum_i δ(r,0)⋅δ(a,b)⋅G₋(a,i+r|b,i)
-    contract_δGr0!(DD, Gdn, b_ab, b_ab, 1, unit_cell, lattice)
+    contract_δGr0!(DD, Gdn, b_ab, b_ab, 1, unit_cell, lattice, sgn)
     
     return nothing
 end
