@@ -1,9 +1,9 @@
 @doc raw"""
-    bond_correlation!(BB::AbstractArray{C}, b″::Bond, b′::Bond,
-                      unit_cell::UnitCell, lattice::Lattice,
+    bond_correlation!(BB::AbstractArray{C}, b″::Bond{D}, b′::Bond{D},
+                      unit_cell::UnitCell{D}, lattice::Lattice{D},
                       Gτ0up::AbstractArray{T,3}, Gτ0dn::AbstractArray{T,3},
                       Gττup::AbstractArray{T,3}, Gττdn::AbstractArray{T,3},
-                      sgn::T=one(T)) where {C<:Complex, T<:Number}
+                      sgn::T=one(T)) where {D, C<:Complex, T<:Number}
 
 Calculate the uneqaul-time bond correlation function
 ```math
@@ -19,14 +19,11 @@ and bond `b′` defines the operators
 \hat{B}_{\sigma',\mathbf{i},\mathbf{r}'}^{c,d}=\hat{c}_{\sigma',\mathbf{i}+\mathbf{r}'}^{\dagger}\hat{d}_{\sigma',\mathbf{i}}^{\phantom{\dagger}}.
 ```
 """
-function bond_correlation!(BB::AbstractArray{C}, b″::Bond, b′::Bond,
-                           unit_cell::UnitCell, lattice::Lattice,
+function bond_correlation!(BB::AbstractArray{C}, b″::Bond{D}, b′::Bond{D},
+                           unit_cell::UnitCell{D}, lattice::Lattice{D},
                            Gτ0up::AbstractArray{T,3}, Gτ0dn::AbstractArray{T,3},
                            Gττup::AbstractArray{T,3}, Gττdn::AbstractArray{T,3},
-                           sgn::T=one(T)) where {C<:Complex, T<:Number}
-
-    # get dimension of system
-    D = unit_cell.D
+                           sgn::T=one(T)) where {D, C<:Complex, T<:Number}
 
     # length of imaginary time axis
     Lτ = size(BB,D+1) - 1
@@ -79,10 +76,10 @@ function bond_correlation!(BB::AbstractArray{C}, b″::Bond, b′::Bond,
 end
 
 @doc raw"""
-    bond_correlation!(BB::AbstractArray{C}, b″::Bond, b′::Bond,
-                      unit_cell::UnitCell, lattice::Lattice,
+    bond_correlation!(BB::AbstractArray{C}, b″::Bond{D}, b′::Bond{D},
+                      unit_cell::UnitCell{D}, lattice::Lattice{D},
                       Gup::AbstractMatrix{T}, Gdn::AbstractMatrix{T},
-                      sgn::T=one(T)) where {C<:Complex, T<:Number}
+                      sgn::T=one(T)) where {D, C<:Complex, T<:Number}
 
 Calculate the eqaul-time bond correlation function
 ```math
@@ -98,13 +95,10 @@ and bond `b′` defines the operators
 \hat{B}_{\sigma',\mathbf{i},\mathbf{r}'}^{c,d}=\hat{c}_{\sigma',\mathbf{i}+\mathbf{r}'}^{\dagger}\hat{d}_{\sigma',\mathbf{i}}^{\phantom{\dagger}}.
 ```
 """
-function bond_correlation!(BB::AbstractArray{C}, b″::Bond, b′::Bond,
-                           unit_cell::UnitCell, lattice::Lattice,
+function bond_correlation!(BB::AbstractArray{C}, b″::Bond{D}, b′::Bond{D},
+                           unit_cell::UnitCell{D}, lattice::Lattice{D},
                            Gup::AbstractMatrix{T}, Gdn::AbstractMatrix{T},
-                           sgn::T=one(T)) where {C<:Complex, T<:Number}
-
-    # get dimension of system
-    D = unit_cell.D
+                           sgn::T=one(T)) where {D, C<:Complex, T<:Number}
 
     # unrwap bond b″ = (r′ + r_a - r_b) info
     b, a = b″.orbitals

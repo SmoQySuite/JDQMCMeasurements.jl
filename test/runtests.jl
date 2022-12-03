@@ -33,7 +33,7 @@ using LatticeUtilities
     bond_2 = Bond((1,2), [-1,0])
     bond_3 = Bond((1,2), [0,-1])
     neighbor_table = build_neighbor_table([bond_1, bond_2, bond_3], unit_cell, lattice)
-    N = get_num_sites(unit_cell, lattice)
+    N = nsites(unit_cell, lattice)
 
     # construct hopping matrix
     K = zeros(typeof(t), N, N)
@@ -124,13 +124,13 @@ using LatticeUtilities
     spin_y_correlation!(SySy0, 1, 1, unit_cell, lattice, G00, G00)
 
     SySyτ = zeros(Complex{Float64}, lattice.L..., Lτ+1);
-    spin_y_correlation!(SySyτ, 1, 1, unit_cell, lattice, Gτ0, Gτ0, Gττ, Gττ)
+    spin_y_correlation!(SySyτ, 1, 1, unit_cell, lattice, Gτ0, Gτ0)
 
     SxSx0 = zeros(Complex{Float64}, lattice.L...);
     spin_x_correlation!(SxSx0, 1, 1, unit_cell, lattice, G00, G00)
 
     SxSxτ = zeros(Complex{Float64}, lattice.L..., Lτ+1);
-    spin_x_correlation!(SxSxτ, 1, 1, unit_cell, lattice, Gτ0, Gτ0, Gττ, Gττ)
+    spin_x_correlation!(SxSxτ, 1, 1, unit_cell, lattice, Gτ0, Gτ0)
 
     @test SzSz0 ≈ SySy0
     @test SzSz0 ≈ SxSx0

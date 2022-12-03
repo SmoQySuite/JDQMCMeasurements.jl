@@ -1,9 +1,9 @@
 @doc raw"""
     fourier_transform!(C::AbstractArray{Complex{T}}, a::Int, b::Int, dim::Int,
-                      unit_cell::UnitCell{T}, lattice::Lattice) where {T<:AbstractFloat}
+                       unit_cell::UnitCell{D,T}, lattice::Lattice{D}) where {D, T<:AbstractFloat}
 
     fourier_transform!(C::AbstractArray{Complex{T}}, a::Int, b::Int,
-                       unit_cell::UnitCell{T}, lattice::Lattice) where {T<:AbstractFloat}
+                       unit_cell::UnitCell{D,T}, lattice::Lattice{D}) where {D, T<:AbstractFloat}
 
 Calculate the fourier transform from position to momentum space
 ```math
@@ -14,7 +14,7 @@ C_{\mathbf{k}}^{a,b}= & \sum_{\mathbf{r}}e^{{\rm -i}\mathbf{k}\cdot(\mathbf{r}+\
 where ``a`` and ``b`` specify orbital species in the unit cell. Note that the array `C` is modified in-place. If `dim` is passed,
 iterate over this dimension of the array, performing a fourier transform on each slice.
 """
-function fourier_transform!(C::AbstractArray{Complex{T}}, a::Int, b::Int, dim::Int, unit_cell::UnitCell{T}, lattice::Lattice) where {T<:AbstractFloat}
+function fourier_transform!(C::AbstractArray{Complex{T}}, a::Int, b::Int, dim::Int, unit_cell::UnitCell{D,T}, lattice::Lattice{D}) where {D, T<:AbstractFloat}
 
     for C_l in eachslice(C, dims=dim)
         fourier_transform!(C_l, a, b, unit_cell, lattice)
@@ -23,16 +23,13 @@ function fourier_transform!(C::AbstractArray{Complex{T}}, a::Int, b::Int, dim::I
     return nothing
 end
 
-function fourier_transform!(C::AbstractArray{Complex{T}}, a::Int, b::Int, unit_cell::UnitCell{T}, lattice::Lattice) where {T<:AbstractFloat}
+function fourier_transform!(C::AbstractArray{Complex{T}}, a::Int, b::Int, unit_cell::UnitCell{D,T}, lattice::Lattice{D}) where {D, T<:AbstractFloat}
 
     # perform standard FFT from position to momentum space
     fft!(C)
 
     # if two different orbitals
     if a != b
-
-        # get dimension of system
-        D = unit_cell.D
 
         # initiailize temporary storage vecs
         r_vec = zeros(T, D)

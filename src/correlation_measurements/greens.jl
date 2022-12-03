@@ -1,7 +1,7 @@
 @doc raw"""
     measure_greens!(G::AbstractArray{C}, a::Int, b::Int, 
-                    unit_cell::UnitCell, lattice::Lattice,
-                    Gτ0::AbstractArray{T,3}, sgn::T=one(T)) where {C<:Complex, T<:Number}
+                    unit_cell::UnitCell{D}, lattice::Lattice{D},
+                    Gτ0::AbstractArray{T,3}, sgn::T=one(T)) where {D, C<:Complex, T<:Number}
 
 Measure the unequal time Green's function averaged over translation symmetry
 ```math
@@ -11,11 +11,8 @@ G_{\sigma,\mathbf{r}}^{a,b}(\tau)=\frac{1}{N}\sum_{\mathbf{i}}G_{\sigma,\mathbf{
 with the result being added to `G`.
 """
 function greens!(G::AbstractArray{C}, a::Int, b::Int, 
-                 unit_cell::UnitCell, lattice::Lattice,
-                 Gτ0::AbstractArray{T,3}, sgn::T=one(T)) where {C<:Complex, T<:Number}
-
-    # get dimension of system
-    D = unit_cell.D
+                 unit_cell::UnitCell{D}, lattice::Lattice{D},
+                 Gτ0::AbstractArray{T,3}, sgn::T=one(T)) where {D, C<:Complex, T<:Number}
 
     # length of imaginary time axis
     Lτ = size(G,D+1) - 1
@@ -38,8 +35,8 @@ end
 
 @doc raw"""
     greens!(G::AbstractArray{C}, a::Int, b::Int, 
-            unit_cell::UnitCell, lattice::Lattice,
-            G00::AbstractMatrix{T}, sgn::T=one(T)) where {C<:Complex, T<:Number}
+            unit_cell::UnitCell{D}, lattice::Lattice{D},
+            G00::AbstractMatrix{T}, sgn::T=one(T)) where {D, C<:Complex, T<:Number}
 
 Measure the equal time Green's function averaged over translation symmetry
 ```math
@@ -49,11 +46,8 @@ G_{\sigma,\mathbf{r}}^{a,b}=\frac{1}{N}\sum_{\mathbf{i}}G_{\sigma,\mathbf{i}+\ma
 with the result being added to `G`.
 """
 function greens!(G::AbstractArray{C}, a::Int, b::Int, 
-                 unit_cell::UnitCell, lattice::Lattice,
-                 G00::AbstractMatrix{T}, sgn::T=one(T)) where {C<:Complex, T<:Number}
-
-    # get dimension of system
-    D = unit_cell.D
+                 unit_cell::UnitCell{D}, lattice::Lattice{D},
+                 G00::AbstractMatrix{T}, sgn::T=one(T)) where {D, C<:Complex, T<:Number}
     
     # construct the relevant bond definition
     d = Bond((b,a), zeros(Int, D))

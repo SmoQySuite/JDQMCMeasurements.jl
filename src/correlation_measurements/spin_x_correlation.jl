@@ -1,9 +1,9 @@
 @doc raw"""
     spin_x_correlation!(SxSx::AbstractArray{C}, a::Int, b::Int,
-                        unit_cell::UnitCell, lattice::Lattice,
+                        unit_cell::UnitCell{D}, lattice::Lattice{D},
                         Gτ0up::AbstractArray{T,3}, Gτ0dn::AbstractArray{T,3},
                         Gττup::AbstractArray{T,3}, Gττdn::AbstractArray{T,3}
-                        sgn::T=one(T)) where {C<:Complex, T<:Number}
+                        sgn::T=one(T)) where {D, C<:Complex, T<:Number}
 
 Calculate the unequal-time spin-spin correlation function in the ``\hat{x}`` direction, given by
 ```math
@@ -25,13 +25,9 @@ where the spin-``\hat{x}`` operator is given by
 ```
 """
 function spin_x_correlation!(SxSx::AbstractArray{C}, a::Int, b::Int,
-                             unit_cell::UnitCell, lattice::Lattice,
+                             unit_cell::UnitCell{D}, lattice::Lattice{D},
                              Gτ0up::AbstractArray{T,3}, Gτ0dn::AbstractArray{T,3},
-                             Gττup::AbstractArray{T,3}, Gττdn::AbstractArray{T,3},
-                             sgn::T=one(T)) where {C<:Complex, T<:Number}
-
-    # get dimension of system
-    D = unit_cell.D
+                             sgn::T=one(T)) where {D, C<:Complex, T<:Number}
 
     # length of imaginary time axis
     Lτ = size(SxSx,D+1) - 1
@@ -61,9 +57,9 @@ end
 
 @doc raw"""
     spin_x_correlation!(SxSx::AbstractArray{C}, a::Int, b::Int,
-                        unit_cell::UnitCell, lattice::Lattice,
+                        unit_cell::UnitCell{D}, lattice::Lattice{D},
                         Gup::AbstractMatrix{T}, Gdn::AbstractMatrix{T},
-                        sgn::T=one(T)) where {C<:Complex, T<:Number}
+                        sgn::T=one(T)) where {D, C<:Complex, T<:Number}
 
 Calculate the equal-time spin-spin correlation function in the ``\hat{x}`` direction, given by
 ```math
@@ -72,12 +68,9 @@ Calculate the equal-time spin-spin correlation function in the ``\hat{x}`` direc
 ```
 """
 function spin_x_correlation!(SxSx::AbstractArray{C}, a::Int, b::Int,
-                             unit_cell::UnitCell, lattice::Lattice,
+                             unit_cell::UnitCell{D}, lattice::Lattice{D},
                              Gup::AbstractMatrix{T}, Gdn::AbstractMatrix{T},
-                             sgn::T=one(T)) where {C<:Complex, T<:Number}
-
-    # get dimension of system
-    D = unit_cell.D
+                             sgn::T=one(T)) where {D, C<:Complex, T<:Number}
 
     # define zero unit cell displacement bonds
     z = zeros(Int,D) # zero displacement

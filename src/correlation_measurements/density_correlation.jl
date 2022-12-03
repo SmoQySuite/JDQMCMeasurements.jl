@@ -1,9 +1,9 @@
 @doc raw"""
     density_correlation!(DD::AbstractArray{C}, a::Int, b::Int,
-                         unit_cell::UnitCell, lattice::Lattice,
+                         unit_cell::UnitCell{D}, lattice::Lattice{D},
                          Gτ0up::AbstractArray{T,3}, Gτ0dn::AbstractArray{T,3},
                          Gττup::AbstractArray{T,3}, Gττdn::AbstractArray{T,3},
-                         sgn::T=one(T)) where {C<:Complex, T<:Number}
+                         sgn::T=one(T)) where {D, C<:Complex, T<:Number}
 
 Calculate the unequal time density-density (charge) correlation function
 ```math
@@ -20,13 +20,10 @@ The arrays `Gττup` and `Gττdn` represent the equal time Green's functions ``
 for all imaginary time slices ``\tau = \Delta\tau\cdot l`` respectively.
 """
 function density_correlation!(DD::AbstractArray{C}, a::Int, b::Int,
-                              unit_cell::UnitCell, lattice::Lattice,
+                              unit_cell::UnitCell{D}, lattice::Lattice{D},
                               Gτ0up::AbstractArray{T,3}, Gτ0dn::AbstractArray{T,3},
                               Gττup::AbstractArray{T,3}, Gττdn::AbstractArray{T,3},
-                              sgn::T=one(T)) where {C<:Complex, T<:Number}
-    
-    # get dimension of system
-    D = unit_cell.D
+                              sgn::T=one(T)) where {D, C<:Complex, T<:Number}
 
     # length of imaginary time axis
     Lτ = size(DD,D+1) - 1
@@ -82,9 +79,9 @@ end
 
 @doc raw"""
     density_correlation!(DD::AbstractArray{C}, a::Int, b::Int,
-                         unit_cell::UnitCell, lattice::Lattice,
+                         unit_cell::UnitCell{D}, lattice::Lattice{D},
                          Gup::AbstractMatrix{T}, Gdn::AbstractMatrix{T},
-                         sgn::T=one(T)) where {C<:Complex, T<:Number}
+                         sgn::T=one(T)) where {D, C<:Complex, T<:Number}
 
 Calculate the equaltime density-density (charge) correlation funciton
 ```math
@@ -96,12 +93,9 @@ with the result being added to the array `DD`.
 The array `Gup` and `Gdn` are the eqaultime Green's functions ``G_{\uparrow}(0,0)`` and ``G_{\downarrow}(0,0)`` respectively.
 """
 function density_correlation!(DD::AbstractArray{C}, a::Int, b::Int,
-                              unit_cell::UnitCell, lattice::Lattice,
+                              unit_cell::UnitCell{D}, lattice::Lattice{D},
                               Gup::AbstractMatrix{T}, Gdn::AbstractMatrix{T},
-                              sgn::T=one(T)) where {C<:Complex, T<:Number}
-
-    # get dimension of system
-    D = unit_cell.D
+                              sgn::T=one(T)) where {D, C<:Complex, T<:Number}
 
     # define zero unit cell displacement bonds
     z = zeros(Int,D) # zero displacement
