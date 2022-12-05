@@ -32,22 +32,23 @@ function fourier_transform!(C::AbstractArray{Complex{T}}, a::Int, b::Int, unit_c
     if a != b
 
         # initiailize temporary storage vecs
-        r_vec = zeros(T, D)
-        k_pnt = zeros(T, D)
-        k_loc = lattice.lvec
+        r_vec   = MVector{D,T}(undef)
+        k_point = MVector{D,T}(undef)
 
         # calculate displacement vector seperating two orbitals in question
-        r_a = @view unit_cell.lattice_vecs[:,a]
-        r_b = @view unit_cell.lattice_vecs[:,b]
+        r_a = unit_cell.basis_vecs[a]
+        r_b = unit_cell.basis_vecs[b]
         @. r_vec = r_a - r_b
 
+        # have the array index from zero
+        C′ = OffsetArrays.Origin(0)(C)        
+
         # iterate over each k-point
-        @fastmath @inbounds for k in CartesianIndices(C)
+        @fastmath @inbounds for k in CartesianIndices(C′)
             # transform to appropriate gauge accounting for basis vector
             # i.e. relative position of orbitals within unit cell
-            @. k_loc = k.I - 1
-            calc_k_point!(k_pnt, k_loc, unit_cell, lattice)
-            C[k] = exp(-im*dot(k_pnt,r_vec)) * C[k]
+            calc_k_point!(k_point, k.I, unit_cell, lattice)
+            C′[k] = exp(-im*dot(k_point,r_vec)) * C′[k]
         end
     end
 
