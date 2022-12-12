@@ -24,3 +24,8 @@ To install [`JDQMCMeasurements.jl`](https://github.com/SmoQySuite/JDQMCMeasureme
 ```julia
 ] add JDQMCFramework
 ```
+
+## Documentation
+
+- [STABLE](https://SmoQySuite.github.io/JDQMCFramework.jl/stable/): Documentation for the latest version of the code published to the Julia [`General`](https://github.com/JuliaRegistries/General.git) registry.
+- [DEV](https://SmoQySuite.github.io/JDQMCFramework.jl/dev/): Documentation for the latest commit to the `master` branch.
