@@ -18,7 +18,7 @@ export susceptibility, susceptibility!
 
 # implement scalar measurements
 include("scalar_measurements.jl")
-export measure_N, measure_n, measure_N², measure_double_occ
+export measure_N, measure_n, measure_Nsqrd, measure_double_occ
 
 # implement Green's function measurement
 include("correlation_measurements/greens.jl")

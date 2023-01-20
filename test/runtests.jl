@@ -112,7 +112,7 @@ using LatticeUtilities
     density_correlation!(DD0, 2, 2, unit_cell, lattice, G00, G00)
     density_correlation!(DD0, 1, 2, unit_cell, lattice, G00, G00)
     density_correlation!(DD0, 2, 1, unit_cell, lattice, G00, G00)
-    @test measure_N²(G00, G00) ≈ real(lattice.N*sum(DD0))
+    @test measure_Nsqrd(G00, G00) ≈ real(lattice.N*sum(DD0))
 
     SzSz0 = zeros(Complex{Float64}, lattice.L...);
     spin_z_correlation!(SzSz0, 1, 1, unit_cell, lattice, G00, G00)

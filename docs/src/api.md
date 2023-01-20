@@ -25,13 +25,13 @@ bond_correlation!
 - [`measure_n`](@ref)
 - [`measure_double_occ`](@ref)
 - [`measure_N`](@ref)
-- [`measure_N²`](@ref)
+- [`measure_Nsqrd`](@ref)
 
 ```@docs
 measure_n
 measure_double_occ
 measure_N
-measure_N²
+measure_Nsqrd
 ```
 
 ## Utility Functions

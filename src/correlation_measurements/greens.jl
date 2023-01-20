@@ -1,7 +1,7 @@
 @doc raw"""
-    measure_greens!(G::AbstractArray{C}, a::Int, b::Int, 
-                    unit_cell::UnitCell{D}, lattice::Lattice{D},
-                    Gτ0::AbstractArray{T,3}, sgn::T=one(T)) where {D, C<:Complex, T<:Number}
+    greens!(G::AbstractArray{C}, a::Int, b::Int, 
+            unit_cell::UnitCell{D}, lattice::Lattice{D},
+            Gτ0::AbstractArray{T,3}, sgn::T=one(T)) where {D, C<:Complex, T<:Number}
 
 Measure the unequal time Green's function averaged over translation symmetry
 ```math
