@@ -4,6 +4,7 @@ using LinearAlgebra
 using FFTW
 using LatticeUtilities
 import ShiftedArrays as sa
+import OffsetArrays as oa
 
 # implement methods no exported by the package
 include("utilities.jl")

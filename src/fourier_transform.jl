@@ -41,7 +41,7 @@ function fourier_transform!(C::AbstractArray{Complex{T}}, a::Int, b::Int, unit_c
         @. r_vec = r_a - r_b
 
         # have the array index from zero
-        C′ = OffsetArrays.Origin(0)(C)        
+        C′ = oa.Origin(0)(C)        
 
         # iterate over each k-point
         @fastmath @inbounds for k in CartesianIndices(C′)
