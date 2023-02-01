@@ -2,6 +2,7 @@ module JDQMCMeasurements
 
 using LinearAlgebra
 using FFTW
+using StaticArrays
 using LatticeUtilities
 import ShiftedArrays as sa
 import OffsetArrays as oa
@@ -32,10 +33,6 @@ export density_correlation!
 # implement Sx-Sx spin correlation function
 include("correlation_measurements/spin_x_correlation.jl")
 export spin_x_correlation!
-
-# implement Sy-Sy spin correlation function
-include("correlation_measurements/spin_y_correlation.jl")
-export spin_y_correlation!
 
 # implement Sz-Sz spin correlation function
 include("correlation_measurements/spin_z_correlation.jl")

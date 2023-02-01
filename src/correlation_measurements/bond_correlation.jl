@@ -1,136 +1,114 @@
 @doc raw"""
-    bond_correlation!(BB::AbstractArray{C}, b″::Bond{D}, b′::Bond{D},
-                      unit_cell::UnitCell{D}, lattice::Lattice{D},
-                      Gτ0up::AbstractArray{T,3}, Gτ0dn::AbstractArray{T,3},
-                      Gττup::AbstractArray{T,3}, Gττdn::AbstractArray{T,3},
-                      sgn::T=one(T)) where {D, C<:Complex, T<:Number}
+    bond_correlation!(BB::AbstractArray{C,D}, b′::Bond{D}, b″::Bond{D}, unit_cell::UnitCell{D}, lattice::Lattice{D},
+                      Gup_τ0::AbstractMatrix{T}, Gup_0τ::AbstractMatrix{T}, Gup_ττ::AbstractMatrix{T}, Gup_00::AbstractMatrix{T},
+                      Gdn_τ0::AbstractMatrix{T}, Gdn_0τ::AbstractMatrix{T}, Gdn_ττ::AbstractMatrix{T}, Gdn_00::AbstractMatrix{T},
+                      sgn::T=one(T)) where {D, C<:Number, T<:Number}
 
-Calculate the uneqaul-time bond correlation function
+Calculate the uneqaul-time bond-bond correlation function
 ```math
-\mathcal{B}_{\mathbf{r}}^{(a,b,\mathbf{r}''),(c,d,\mathbf{r'})}(\tau)=\frac{1}{N}\sum_{\mathbf{i}}\mathcal{B}_{\mathbf{i}+\mathbf{r},\mathbf{i}}^{(a,b,\mathbf{r}''),(c,d,\mathbf{r'})}(\tau,0)
-=\frac{1}{N}\sum_{\mathbf{i},\sigma,\sigma'}\langle\hat{B}_{\sigma,\mathbf{i}+\mathbf{r},\mathbf{r}''}^{a,b}(\tau)\hat{B}_{\sigma',\mathbf{i},\mathbf{r'}}^{c,d}(0)\rangle,
+\mathcal{B}_{\mathbf{r}}^{(\mathbf{r}',a,b),(\mathbf{r}'',c,d)}(\tau) =
+    \frac{1}{N}\sum_{\mathbf{i}} \langle[\hat{B}_{\uparrow,\mathbf{i}+\mathbf{r},(\mathbf{r}',a,b)}(\tau)+\hat{B}_{\downarrow,\mathbf{i}+\mathbf{r},(\mathbf{r}',a,b)}(\tau)]
+                                   \cdot[\hat{B}_{\uparrow,\mathbf{i},(\mathbf{r}'',c,d)}(0)+\hat{B}_{\downarrow,\mathbf{i},(\mathbf{r}'',c,d)}(0)]\rangle,
 ```
-where bond `b″` defines the bond operators
+where the
 ```math
-\hat{B}_{\sigma,\mathbf{i}+\mathbf{r},\mathbf{r}''}^{a,b}=\hat{a}_{\sigma,\mathbf{i}+\mathbf{r}+\mathbf{r}''}^{\dagger}\hat{b}_{\sigma,\mathbf{i}+\mathbf{r}}^{\phantom{\dagger}}
+\hat{B}_{\sigma,\mathbf{i},(\mathbf{r},a,b)} = \hat{a}_{\sigma,\mathbf{i}+\mathbf{r}}^{\dagger}\hat{b}_{\sigma,\mathbf{i}}^{\phantom{\dagger}}
+                                             + \hat{b}_{\sigma,\mathbf{i}}^{\dagger}\hat{a}_{\sigma,\mathbf{i}+\mathbf{r}}^{\phantom{\dagger}}
 ```
-and bond `b′` defines the operators
-```math
-\hat{B}_{\sigma',\mathbf{i},\mathbf{r}'}^{c,d}=\hat{c}_{\sigma',\mathbf{i}+\mathbf{r}'}^{\dagger}\hat{d}_{\sigma',\mathbf{i}}^{\phantom{\dagger}}.
-```
+is the bond operator.
+
+# Fields
+
+- `BB::AbstractArray{C,D}`: Array the bond correlation function ``\mathcal{B}_{\mathbf{r}}^{(\mathbf{r}',a,b),(\mathbf{r}'',c,d)}(\tau)`` is added to.
+- `b′::Bond{D}`: Bond defining the bond operator appearing on the left side of the bond correlation function.
+- `b″::Bond{D}`: Bond defining the bond operator appearing on the right side of the bond correlation function.
+- `unit_cell::UnitCell{D}`: Defines unit cell.
+- `lattice::Lattice{D}`: Specifies size of finite lattice.
+- `Gup_τ0::AbstractMatrix{T}`: The matrix ``G_{\uparrow}(\tau,0).``
+- `Gup_0τ::AbstractMatrix{T}`: The matrix ``G_{\uparrow}(0,\tau).``
+- `Gup_ττ::AbstractMatrix{T}`: The matrix ``G_{\uparrow}(\tau,\tau).``
+- `Gup_00::AbstractMatrix{T}`: The matrix ``G_{\uparrow}(0,0).``
+- `Gdn_τ0::AbstractMatrix{T}`: The matrix ``G_{\downarrow}(\tau,0).``
+- `Gdn_0τ::AbstractMatrix{T}`: The matrix ``G_{\downarrow}(0,\tau).``
+- `Gdn_ττ::AbstractMatrix{T}`: The matrix ``G_{\downarrow}(\tau,\tau).``
+- `Gdn_00::AbstractMatrix{T}`: The matrix ``G_{\downarrow}(0,0).``
+- `sgn::T=one(T)`: The sign of the weight appearing in a DQMC simulation.
 """
-function bond_correlation!(BB::AbstractArray{C}, b″::Bond{D}, b′::Bond{D},
-                           unit_cell::UnitCell{D}, lattice::Lattice{D},
-                           Gτ0up::AbstractArray{T,3}, Gτ0dn::AbstractArray{T,3},
-                           Gττup::AbstractArray{T,3}, Gττdn::AbstractArray{T,3},
-                           sgn::T=one(T)) where {D, C<:Complex, T<:Number}
+function bond_correlation!(BB::AbstractArray{C,D}, b′::Bond{D}, b″::Bond{D}, unit_cell::UnitCell{D}, lattice::Lattice{D},
+                           Gup_τ0::AbstractMatrix{T}, Gup_0τ::AbstractMatrix{T}, Gup_ττ::AbstractMatrix{T}, Gup_00::AbstractMatrix{T},
+                           Gdn_τ0::AbstractMatrix{T}, Gdn_0τ::AbstractMatrix{T}, Gdn_ττ::AbstractMatrix{T}, Gdn_00::AbstractMatrix{T},
+                           sgn::T=one(T)) where {D, C<:Number, T<:Number}
 
-    # length of imaginary time axis
-    Lτ = size(BB,D+1) - 1
-
-    # get τ=0 Green's function matrices
-    Gup_00 = @view Gττup[:,:,1] # G₊(0,0)
-    Gdn_00 = @view Gττdn[:,:,1] # G₋(0,0)
-
-    # unrwap bond b″ = (r′ + r_a - r_b) info
-    b, a = b″.orbitals
-    r″ = b″.displacement
-
-    # unrwap bond b′ = (r′ + r_c - r_d) info
-    d, c = b′.orbitals
+    # b′ = r′ + (r_a - r_b)
+    b, a = b′.orbitals
     r′ = b′.displacement
 
-    # zero vector
-    z = zeros(Int, D)
-
-    # get τ=0 Green's function matrices
-    Gup_00 = @view Gττup[:,:,1] # G₊(0,0)
-    Gdn_00 = @view Gττdn[:,:,1] # G₋(0,0)
-
-    # iterate over imaginary time
-    for l in 0:Lτ
-        # get the bond correlations for τ = Δτ⋅l
-        BB_τ = selectdim(BB, ndims(BB), l+1)
-        # get relevant Green's function matrices
-        Gup_ττ = @view Gττup[:,:,l+1] # G₊(τ,τ)
-        Gdn_ττ = @view Gττdn[:,:,l+1] # G₋(τ,τ)
-        Gup_τ0 = @view Gτ0up[:,:,l+1] # G₊(τ,0)
-        Gdn_τ0 = @view Gτ0dn[:,:,l+1] # G₋(τ,0)
-        Gup_βmτ0 = @view Gτ0up[:,:,Lτ-l+1] # G₊(β-τ,0)
-        Gdn_βmτ0 = @view Gτ0dn[:,:,Lτ-l+1] # G₋(β-τ,0)
-        # BB(τ,r) = BB(τ,r) + 1/N sum_i G₊(b,i+r,τ|a,i+r+r″,τ)⋅G₊(d,i,0|c,i+r′,0)
-        contract_Grr_G00!(BB_τ, Gup_ττ, Gup_00, b, a, d, c, z, r″, z, r′, 1, unit_cell, lattice, sgn)
-        # BB(τ,r) = BB(τ,r) + 1/N sum_i G₋(b,i+r,τ|a,i+r+r″,τ)⋅G₋(d,i,0|c,i+r′,0)
-        contract_Grr_G00!(BB_τ, Gdn_ττ, Gdn_00, b, a, d, c, z, r″, z, r′, 1, unit_cell, lattice, sgn)
-        # BB(τ,r) = BB(τ,r) + 1/N sum_i G₊(b,i+r,τ|a,i+r+r″,τ)⋅G₋(d,i,0|c,i+r′,0)
-        contract_Grr_G00!(BB_τ, Gup_ττ, Gdn_00, b, a, d, c, z, r″, z, r′, 1, unit_cell, lattice, sgn)
-        # BB(τ,r) = BB(τ,r) + 1/N sum_i G₋(b,i+r,τ|a,i+r+r″,τ)⋅G₊(d,i,0|c,i+r′,0)
-        contract_Grr_G00!(BB_τ, Gdn_ττ, Gup_00, b, a, d, c, z, r″, z, r′, 1, unit_cell, lattice, sgn)
-        # BB(τ,r) = BB(τ,r) + 1/N sum_i G₊(d,i,β-τ|a,i+r+r″,0)⋅G₊(b,i+r,τ|c,i+r′,0)
-        contract_G0r_Gr0!(BB_τ, Gup_βmτ0, Gup_τ0, d, a, b, c, z, r″, z, r′, 1, unit_cell, lattice, sgn)
-        # BB(τ,r) = BB(τ,r) + 1/N sum_i G₋(d,i,β-τ|a,i+r+r″,0)⋅G₋(b,i+r,τ|c,i+r′,0)
-        contract_G0r_Gr0!(BB_τ, Gdn_βmτ0, Gdn_τ0, d, a, b, c, z, r″, z, r′, 1, unit_cell, lattice, sgn)
-    end
-
-    return nothing
-end
-
-@doc raw"""
-    bond_correlation!(BB::AbstractArray{C}, b″::Bond{D}, b′::Bond{D},
-                      unit_cell::UnitCell{D}, lattice::Lattice{D},
-                      Gup::AbstractMatrix{T}, Gdn::AbstractMatrix{T},
-                      sgn::T=one(T)) where {D, C<:Complex, T<:Number}
-
-Calculate the eqaul-time bond correlation function
-```math
-\mathcal{B}_{\mathbf{r}}^{(a,b,\mathbf{r}''),(c,d,\mathbf{r'})}=\frac{1}{N}\sum_{\mathbf{i}}\mathcal{B}_{\mathbf{i}+\mathbf{r},\mathbf{i}}^{(a,b,\mathbf{r}''),(c,d,\mathbf{r'})}
-=\frac{1}{N}\sum_{\mathbf{i},\sigma,\sigma'}\langle\hat{B}_{\sigma,\mathbf{i}+\mathbf{r},\mathbf{r}''}^{a,b}\hat{B}_{\sigma',\mathbf{i},\mathbf{r'}}^{c,d}\rangle,
-```
-where bond `b″` defines the bond operators
-```math
-\hat{B}_{\sigma,\mathbf{i}+\mathbf{r},\mathbf{r}''}^{a,b}=\hat{a}_{\sigma,\mathbf{i}+\mathbf{r}+\mathbf{r}''}^{\dagger}\hat{b}_{\sigma,\mathbf{i}+\mathbf{r}}^{\phantom{\dagger}}
-```
-and bond `b′` defines the operators
-```math
-\hat{B}_{\sigma',\mathbf{i},\mathbf{r}'}^{c,d}=\hat{c}_{\sigma',\mathbf{i}+\mathbf{r}'}^{\dagger}\hat{d}_{\sigma',\mathbf{i}}^{\phantom{\dagger}}.
-```
-"""
-function bond_correlation!(BB::AbstractArray{C}, b″::Bond{D}, b′::Bond{D},
-                           unit_cell::UnitCell{D}, lattice::Lattice{D},
-                           Gup::AbstractMatrix{T}, Gdn::AbstractMatrix{T},
-                           sgn::T=one(T)) where {D, C<:Complex, T<:Number}
-
-    # unrwap bond b″ = (r′ + r_a - r_b) info
-    b, a = b″.orbitals
+    # b″ = r″ + (r_c - r_d)
+    d, c = b″.orbitals
     r″ = b″.displacement
 
-    # unrwap bond b′ = (r′ + r_c - r_d) info
-    d, c = b′.orbitals
-    r′ = b′.displacement
-
     # zero vector
-    z = zeros(Int, D)
+    z = @SVector zeros(Int, D)
 
-    # define relevant bonds
-    b_da_nr′ = Bond((a,d), -r′) # -r′ + (r_d - r_a)
-    b_bc_nr″ = Bond((c,b), -r″) # -r″ + (r_b - r_c)
-    
-    # BB(r) = BB(r) + 1/N sum_i G₊(b,i+r|a,i+r+r″)⋅G₊(d,i|c,i+r′)
-    contract_Grr_G00!(BB, Gup, Gup, b, a, d, c, z, r″, z, r′, 1, unit_cell, lattice, sgn)
-    # BB(r) = BB(r) + 1/N sum_i G₋(b,i+r|a,i+r+r″)⋅G₋(d,i|c,i+r′)
-    contract_Grr_G00!(BB, Gdn, Gdn, b, a, d, c, z, r″, z, r′, 1, unit_cell, lattice, sgn)
-    # BB(r) = BB(r) + 1/N sum_i G₊(b,i+r|a,i+r+r″)⋅G₋(d,i|c,i+r′)
-    contract_Grr_G00!(BB, Gup, Gdn, b, a, d, c, z, r″, z, r′, 1, unit_cell, lattice, sgn)
-    # BB(r) = BB(r) + 1/N sum_i G₋(b,i+r|a,i+r+r″)⋅G₊(d,i|c,i+r′)
-    contract_Grr_G00!(BB, Gdn, Gup, b, a, d, c, z, r″, z, r′, 1, unit_cell, lattice, sgn)
-    # BB(r) = BB(r) - 1/N sum_i G₊(d,i|a,i+r+r″)⋅G₊(b,i+r|c,i+r′)
-    contract_G0r_Gr0!(BB, Gup, Gup, d, a, b, c, z, r″, z, r′, -1, unit_cell, lattice, sgn)
-    # BB(r) = BB(r) - 1/N sum_i G₋(d,i|a,i+r+r″)⋅G₋(b,i+r|c,i+r′)
-    contract_G0r_Gr0!(BB, Gdn, Gdn, d, a, b, c, z, r″, z, r′, -1, unit_cell, lattice, sgn)
-    # BB(r) = BB(r) + 1/N sum_i δ(d,a)⋅δ(-r′,r)⋅G₊(b,i+r-r″|c,i)
-    contract_δGr0!(BB, Gup, b_da_nr′, b_bc_nr″, 1, unit_cell, lattice, sgn)
-    # BB(r) = BB(r) + 1/N sum_i δ(d,a)⋅δ(-r′,r)⋅G₋(b,i+r-r″|c,i)
-    contract_δGr0!(BB, Gdn, b_da_nr′, b_bc_nr″, 1, unit_cell, lattice, sgn)
+    # BB(τ,r) = BB(τ,r) + G₊(a,i+r+r′,τ|b,i+r,τ)⋅G₊(c,i+r″,0|d,i,0)
+    contract_Grr_G00!(BB, Gup_ττ, Gup_00, a, b, c, d, r′, z, r″, z, 1, unit_cell, lattice, sgn)
+    # BB(τ,r) = BB(τ,r) + G₋(a,i+r+r′,τ|b,i+r,τ)⋅G₋(c,i+r″,0|d,i,0)
+    contract_Grr_G00!(BB, Gdn_ττ, Gdn_00, a, b, c, d, r′, z, r″, z, 1, unit_cell, lattice, sgn)
+
+    # BB(τ,r) = BB(τ,r) - G₊(c,i+r″,0|b,i+r,τ)⋅G₊(a,i+r+r′,τ|d,i,0)
+    contract_G0r_Gr0!(BB, Gup_0τ, Gup_τ0, c, b, a, d, r″, z, r′, z, -1, unit_cell, lattice, sgn)
+    # BB(τ,r) = BB(τ,r) - G₋(c,i+r″,0|b,i+r,τ)⋅G₋(a,i+r+r′,τ|d,i,0)
+    contract_G0r_Gr0!(BB, Gdn_0τ, Gdn_τ0, c, b, a, d, r″, z, r′, z, -1, unit_cell, lattice, sgn)
+
+    # BB(τ,r) = BB(τ,r) + G₊(a,i+r+r′,τ|b,i+r,τ)⋅G₊(d,i,0|c,i+r″,0)
+    contract_Grr_G00!(BB, Gup_ττ, Gup_00, a, b, d, c, r′, z, z, r″, 1, unit_cell, lattice, sgn)
+    # BB(τ,r) = BB(τ,r) + G₋(a,i+r+r′,τ|b,i+r,τ)⋅G₋(d,i,0|c,i+r″,0)
+    contract_Grr_G00!(BB, Gdn_ττ, Gdn_00, a, b, d, c, r′, z, z, r″, 1, unit_cell, lattice, sgn)
+
+    # BB(τ,r) = BB(τ,r) - G₊(d,i,0|b,i+r,τ)⋅G₊(a,i+r+r′,τ|c,i+r″,0)
+    contract_G0r_Gr0!(BB, Gup_0τ, Gup_τ0, d, b, a, c, z, z, r′, r″, -1, unit_cell, lattice, sgn)
+    # BB(τ,r) = BB(τ,r) - G₋(d,i,0|b,i+r,τ)⋅G₋(a,i+r+r′,τ|c,i+r″,0)
+    contract_G0r_Gr0!(BB, Gdn_0τ, Gdn_τ0, d, b, a, c, z, z, r′, r″, -1, unit_cell, lattice, sgn)
+
+    # BB(τ,r) = BB(τ,r) + G₊(b,i+r,τ|a,i+r+r′,τ)⋅G₊(c,i+r″,0|d,i,0)
+    contract_Grr_G00!(BB, Gup_ττ, Gup_00, b, a, c, d, z, r′, r″, z, 1, unit_cell, lattice, sgn)
+    # BB(τ,r) = BB(τ,r) + G₋(b,i+r,τ|a,i+r+r′,τ)⋅G₋(c,i+r″,0|d,i,0)
+    contract_Grr_G00!(BB, Gdn_ττ, Gdn_00, b, a, c, d, z, r′, r″, z, 1, unit_cell, lattice, sgn)
+
+    # BB(τ,r) = BB(τ,r) - G₊(c,i+r″,0|a,i+r+r′,τ)⋅G₊(b,i+r,τ|d,i,0)
+    contract_G0r_Gr0!(BB, Gup_0τ, Gup_τ0, c, a, b, d, r″, r′, z, z, -1, unit_cell, lattice, sgn)
+    # BB(τ,r) = BB(τ,r) - G₋(c,i+r″,0|a,i+r+r′,τ)⋅G₋(b,i+r,τ|d,i,0)
+    contract_G0r_Gr0!(BB, Gdn_0τ, Gdn_τ0, c, a, b, d, r″, r′, z, z, -1, unit_cell, lattice, sgn)
+
+    # BB(τ,r) = BB(τ,r) + G₊(b,i+r,τ|a,i+r+r′,τ)⋅G₊(d,i,0|c,i+r″,0)
+    contract_G0r_Gr0!(BB, Gup_ττ, Gup_00, b, a, d, c, z, r′, z, r″, 1, unit_cell, lattice, sgn)
+    # BB(τ,r) = BB(τ,r) + G₋(b,i+r,τ|a,i+r+r′,τ)⋅G₋(d,i,0|c,i+r″,0)
+    contract_G0r_Gr0!(BB, Gdn_ττ, Gdn_00, b, a, d, c, z, r′, z, r″, 1, unit_cell, lattice, sgn)
+
+    # BB(τ,r) = BB(τ,r) - G₊(d,i,0|a,i+r+r′)⋅G₊(b,i+r,τ|c,i+r″,0)
+    contract_G0r_Gr0!(BB, Gup_0τ, Gup_τ0, d, a, b, c, z, r′, z, r″, -1, unit_cell, lattice, sgn)
+    # BB(τ,r) = BB(τ,r) - G₋(d,i,0|a,i+r+r′)⋅G₋(b,i+r,τ|c,i+r″,0)
+    contract_G0r_Gr0!(BB, Gdn_0τ, Gdn_τ0, d, a, b, c, z, r′, z, r″, -1, unit_cell, lattice, sgn)
+
+    # BB(τ,r) = BB(τ,r) + G₊(a,i+r+r′,τ|b,i+r,τ)⋅G₋(c,i+r″,0|d,i,0)
+    contract_Grr_G00!(BB, Gup_ττ, Gdn_00, a, b, c, d, r′, z, r″, z, 1, unit_cell, lattice, sgn)
+    # BB(τ,r) = BB(τ,r) + G₋(a,i+r+r′,τ|b,i+r,τ)⋅G₊(c,i+r″,0|d,i,0)
+    contract_Grr_G00!(BB, Gdn_ττ, Gup_00, a, b, c, d, r′, z, r″, z, 1, unit_cell, lattice, sgn)
+
+    # BB(τ,r) = BB(τ,r) + G₊(a,i+r+r′,τ|b,i+r,τ)⋅G₋(d,i,0|c,i+r″,0)
+    contract_Grr_G00!(BB, Gup_ττ, Gdn_00, a, b, d, c, r′, z, z, r″, 1, unit_cell, lattice, sgn)
+    # BB(τ,r) = BB(τ,r) + G₋(a,i+r+r′,τ|b,i+r,τ)⋅G₊(d,i,0|c,i+r″,0)
+    contract_Grr_G00!(BB, Gdn_ττ, Gup_00, a, b, d, c, r′, z, z, r″, 1, unit_cell, lattice, sgn)
+
+    # BB(τ,r) = BB(τ,r) + G₊(b,i+r,τ|a,i+r+r′,τ)⋅G₋(c,i+r″,0|d,i,0)
+    contract_Grr_G00!(BB, Gup_ττ, Gdn_00, b, a, c, d, z, r′, r″, z, 1, unit_cell, lattice, sgn)
+    # BB(τ,r) = BB(τ,r) + G₋(b,i+r,τ|a,i+r+r′,τ)⋅G₊(c,i+r″,0|d,i,0)
+    contract_Grr_G00!(BB, Gdn_ττ, Gup_00, b, a, c, d, z, r′, r″, z, 1, unit_cell, lattice, sgn)
+
+    # BB(τ,r) = BB(τ,r) + G₊(b,i+r,τ|a,i+r+r′,τ)⋅G₋(d,i,0|c,i+r″,0)
+    contract_G0r_Gr0!(BB, Gup_ττ, Gdn_00, b, a, d, c, z, r′, z, r″, 1, unit_cell, lattice, sgn)
+    # BB(τ,r) = BB(τ,r) + G₋(b,i+r,τ|a,i+r+r′,τ)⋅G₊(d,i,0|c,i+r″,0)
+    contract_G0r_Gr0!(BB, Gdn_ττ, Gup_00, b, a, d, c, z, r′, z, r″, 1, unit_cell, lattice, sgn)
 
     return nothing
 end

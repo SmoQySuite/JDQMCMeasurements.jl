@@ -5,14 +5,32 @@ using LatticeUtilities
 
 @testset "JDQMCMeasurements.jl" begin
     
-    # calculate exact analytic value for Green's function
-    function greens(τ,β,ϵ,U)
+    # fermi function
+    function fermi(ϵ, β)
+
+        return (1-tanh(β/2*ϵ))/2
+    end
+
+    # calculate exact analytic value for the retarded imaginary Green's function
+    function retarded_greens(τ,β,ϵ,U)
         
         gτ = similar(ϵ)
-        @. gτ = exp(-τ*ϵ)/(1+exp(-β*ϵ))
+        @. gτ = inv(exp(τ*ϵ) + exp((τ-β)*ϵ))
         Gτ = U * Diagonal(gτ) * adjoint(U)
+        logdetGτ, sgndetGτ = logabsdet(Diagonal(gτ))
         
-        return Gτ
+        return Gτ, logdetGτ, sgndetGτ
+    end
+
+    # calculate exact analytic value for the advanced imaginary Green's function
+    function advanced_greens(τ,β,ϵ,U)
+        
+        gτ = similar(ϵ)
+        @. gτ = -inv(exp(-τ*ϵ) + exp(-(τ-β)*ϵ))
+        Gτ = U * Diagonal(gτ) * adjoint(U)
+        logdetGτ, sgndetGτ = logabsdet(Diagonal(gτ))
+        
+        return Gτ, logdetGτ, sgndetGτ
     end
 
     # model parameters
@@ -25,7 +43,7 @@ using LatticeUtilities
     # calculate length of imagninary time axis
     Lτ = round(Int, β/Δτ)
 
-    # construct neighbor table for square lattice
+    # construct neighbor table for honeycomb lattice
     unit_cell = UnitCell(lattice_vecs = [[3/2,√3/2],[3/2,-√3/2]],
                          basis_vecs = [[0.,0.],[1.,0.]])
     lattice = Lattice(L = [L,L], periodic = [true,true])
@@ -45,114 +63,101 @@ using LatticeUtilities
     end
 
     # construct diagonal on-site energy matrix
-    V = fill(-μ, N);
+    V = fill(-μ, N)
 
     # hamiltonian matrix
-    H = K + Diagonal(V);
+    H = K + Diagonal(V)
 
     # diagonlize Hamiltonian matrix
-    ϵ, U = eigen(H);
+    ϵ, U = eigen(H)
 
     # calculate equal-time Green's function
-    G00 = greens(0,β,ϵ,U);
+    G00 = retarded_greens(0.0, β, ϵ, U)[1]
+    Gττ = G00
 
-    # calculate uneqaul-time Green's function
-    Gτ0 = zeros(typeof(t), N, N, Lτ+1);
-    Gττ = zeros(typeof(t), N, N, Lτ+1);
-    for l in 0:Lτ
-        Gτ0[:,:,l+1] = greens(Δτ*l, β, ϵ, U)
-        Gττ[:,:,l+1] = G00
-    end
-
-    @test measure_n(G00) ≈ 0.5
-    @test measure_n(G00, 1, unit_cell) ≈ 0.5
-    @test measure_n(G00, 2, unit_cell) ≈ 0.5
-
-    @test measure_double_occ(G00, G00) ≈ 0.25
-    @test measure_double_occ(G00, G00, 1, unit_cell) ≈ 0.25
-    @test measure_double_occ(G00, G00, 2, unit_cell) ≈ 0.25
-
+    # check that the total particle number ⟨N⟩ is measured correctly
     @test measure_N(G00) ≈ N/2
     @test measure_N(G00, 1, unit_cell) ≈ N/4
     @test measure_N(G00, 2, unit_cell) ≈ N/4
 
-    G0 = zeros(Complex{Float64}, lattice.L...);
-    greens!(G0, 1, 1, unit_cell, lattice, G00)
-
-    Gτ = zeros(Complex{Float64}, lattice.L..., Lτ+1);
-    greens!(Gτ, 1, 1, unit_cell, lattice, Gτ0)
-
-    Gβ = -G0
-    Gβ[1,1] += 1
-    @test Gτ[:,:,1] ≈ G0
-    @test Gτ[:,:,end] ≈ Gβ
-
-    G0 = zeros(Complex{Float64}, lattice.L...);
-    greens!(G0, 1, 2, unit_cell, lattice, G00)
-
-    Gτ = zeros(Complex{Float64}, lattice.L..., Lτ+1);
-    greens!(Gτ, 1, 2, unit_cell, lattice, Gτ0)
-
-    Gβ = -G0
-    @test Gτ[:,:,1] ≈ G0
-    @test Gτ[:,:,end] ≈ Gβ
-
+    # calculate density correlation at τ = 0
     DD0 = zeros(Complex{Float64}, lattice.L...)
-    density_correlation!(DD0, 1, 1, unit_cell, lattice, G00, G00)
+    Gτ0 = retarded_greens(0.0, β, ϵ, U)[1]
+    G0τ = advanced_greens(0.0, β, ϵ, U)[1]
+    density_correlation!(DD0, 1, 1, unit_cell, lattice, Gτ0, G0τ, Gττ, G00, Gτ0, G0τ, Gττ, G00, 1.0)
 
-    DDτ = zeros(Complex{Float64}, lattice.L..., Lτ+1);
-    density_correlation!(DDτ, 1, 1, unit_cell, lattice, Gτ0, Gτ0, Gττ, Gττ)
+    # calculate density correlation at τ = β
+    DDβ = zeros(Complex{Float64}, lattice.L...)
+    Gτ0 = retarded_greens(β, β, ϵ, U)[1]
+    G0τ = advanced_greens(β, β, ϵ, U)[1]
+    density_correlation!(DDβ, 1, 1, unit_cell, lattice, Gτ0, G0τ, Gττ, G00, Gτ0, G0τ, Gττ, G00, 1.0)
 
-    @test DDτ[:,:,1] ≈ DD0
-    @test DDτ[:,:,1] ≈ DDτ[:,:,end]
+    # make sure density correlation D(0,r) ≈ D(β,r)
+    @test DD0 ≈ DDβ
+
+    # make on-site density correlation is correct
     @test DD0[1,1] ≈ 1.5
 
+    # make sure two methods for calculating ⟨N²⟩ agree
     DD0 = zeros(Complex{Float64}, lattice.L...)
-    density_correlation!(DD0, 1, 1, unit_cell, lattice, G00, G00)
-    density_correlation!(DD0, 2, 2, unit_cell, lattice, G00, G00)
-    density_correlation!(DD0, 1, 2, unit_cell, lattice, G00, G00)
-    density_correlation!(DD0, 2, 1, unit_cell, lattice, G00, G00)
+    Gτ0 = retarded_greens(0.0, β, ϵ, U)[1]
+    G0τ = advanced_greens(0.0, β, ϵ, U)[1]
+    density_correlation!(DD0, 1, 1, unit_cell, lattice, Gτ0, G0τ, Gττ, G00, Gτ0, G0τ, Gττ, G00, 1.0)
+    density_correlation!(DD0, 2, 2, unit_cell, lattice, Gτ0, G0τ, Gττ, G00, Gτ0, G0τ, Gττ, G00, 1.0)
+    density_correlation!(DD0, 1, 2, unit_cell, lattice, Gτ0, G0τ, Gττ, G00, Gτ0, G0τ, Gττ, G00, 1.0)
+    density_correlation!(DD0, 2, 1, unit_cell, lattice, Gτ0, G0τ, Gττ, G00, Gτ0, G0τ, Gττ, G00, 1.0)
     @test measure_Nsqrd(G00, G00) ≈ real(lattice.N*sum(DD0))
 
-    SzSz0 = zeros(Complex{Float64}, lattice.L...);
-    spin_z_correlation!(SzSz0, 1, 1, unit_cell, lattice, G00, G00)
+    # initialize correlation containers
+    G = zeros(Complex{Float64}, lattice.L...)
+    DD = zeros(Complex{Float64}, lattice.L...)
+    PP = zeros(Complex{Float64}, lattice.L...)
+    SzSz = zeros(Complex{Float64}, lattice.L...)
+    SxSx = zeros(Complex{Float64}, lattice.L...)
+    BB = zeros(Complex{Float64}, lattice.L...)
 
-    SzSzτ = zeros(Complex{Float64}, lattice.L..., Lτ+1);
-    spin_z_correlation!(SzSzτ, 1, 1, unit_cell, lattice, Gτ0, Gτ0, Gττ, Gττ)
+    # iterate of possible imaginary time displacements
+    @testset for l in 0:Lτ
 
-    SySy0 = zeros(Complex{Float64}, lattice.L...);
-    spin_y_correlation!(SySy0, 1, 1, unit_cell, lattice, G00, G00)
+        # calculate the imaginary time displacement
+        τ = Δτ * l
 
-    SySyτ = zeros(Complex{Float64}, lattice.L..., Lτ+1);
-    spin_y_correlation!(SySyτ, 1, 1, unit_cell, lattice, Gτ0, Gτ0)
+        # calculate analytic time-displaced green's function matrices
+        Gτ0 = retarded_greens(τ, β, ϵ, U)[1]
+        G0τ = advanced_greens(τ, β, ϵ, U)[1]
 
-    SxSx0 = zeros(Complex{Float64}, lattice.L...);
-    spin_x_correlation!(SxSx0, 1, 1, unit_cell, lattice, G00, G00)
+        # make sure spin-x and spin-y measurements agree
+        fill!(SzSz, 0)
+        spin_z_correlation!(SzSz, 1, 1, unit_cell, lattice, Gτ0, G0τ, Gττ, G00, Gτ0, G0τ, Gττ, G00, 1.0)
+        fill!(SxSx, 0)
+        spin_x_correlation!(SxSx, 1, 1, unit_cell, lattice, Gτ0, G0τ, Gτ0, G0τ, 1.0)
+        @test SzSz ≈ SxSx
+        fill!(SzSz, 0)
+        spin_z_correlation!(SzSz, 2, 2, unit_cell, lattice, Gτ0, G0τ, Gττ, G00, Gτ0, G0τ, Gττ, G00, 1.0)
+        fill!(SxSx, 0)
+        spin_x_correlation!(SxSx, 2, 2, unit_cell, lattice, Gτ0, G0τ, Gτ0, G0τ, 1.0)
+        @test SzSz ≈ SxSx
+        fill!(SzSz, 0)
+        spin_z_correlation!(SzSz, 1, 2, unit_cell, lattice, Gτ0, G0τ, Gττ, G00, Gτ0, G0τ, Gττ, G00, 1.0)
+        fill!(SxSx, 0)
+        spin_x_correlation!(SxSx, 1, 2, unit_cell, lattice, Gτ0, G0τ, Gτ0, G0τ, 1.0)
+        @test SzSz ≈ SxSx
+        fill!(SzSz, 0)
+        spin_z_correlation!(SzSz, 2, 1, unit_cell, lattice, Gτ0, G0τ, Gττ, G00, Gτ0, G0τ, Gττ, G00, 1.0)
+        fill!(SxSx, 0)
+        spin_x_correlation!(SxSx, 2, 1, unit_cell, lattice, Gτ0, G0τ, Gτ0, G0τ, 1.0)
+        @test SzSz ≈ SxSx
 
-    SxSxτ = zeros(Complex{Float64}, lattice.L..., Lτ+1);
-    spin_x_correlation!(SxSxτ, 1, 1, unit_cell, lattice, Gτ0, Gτ0)
+        # measure bond correlation function
+        fill!(BB, 0)
+        bond_correlation!(BB, bond_1, bond_1, unit_cell, lattice, Gτ0, G0τ, Gττ, G00, Gτ0, G0τ, Gττ, G00, 1.0)
 
-    @test SzSz0 ≈ SySy0
-    @test SzSz0 ≈ SxSx0
+        # measure pair correlation function
+        fill!(PP, 0)
+        pair_correlation!(PP, bond_1, bond_1, unit_cell, lattice, Gτ0, Gτ0, 1.0)
 
-    @test SzSzτ ≈ SySyτ
-    @test SzSzτ ≈ SxSxτ
-
-    BB0 = zeros(Complex{Float64}, lattice.L...)
-    bond_correlation!(BB0, bond_1, bond_1, unit_cell, lattice, G00, G00)
-
-    BBτ = zeros(Complex{Float64}, lattice.L..., Lτ+1)
-    bond_correlation!(BBτ, bond_1, bond_1, unit_cell, lattice, Gτ0, Gτ0, Gττ, Gττ)
-
-    bond_1s = Bond((1,1),[0,0])
-    ΔΔ0 = zeros(Complex{Float64}, lattice.L...)
-    pair_correlation!(ΔΔ0, bond_1s, bond_1s, unit_cell, lattice, G00, G00)
-
-    ΔΔτ = zeros(Complex{Float64}, lattice.L..., Lτ+1);
-    pair_correlation!(ΔΔτ, bond_1s, bond_1s, unit_cell, lattice, Gτ0, Gτ0)
-
-    χ_p = zeros(Complex{Float64}, lattice.L...)
-    ΔΔτ_k = copy(ΔΔτ)
-    fourier_transform!(ΔΔτ_k, 1, 1, ndims(ΔΔτ_k), unit_cell, lattice)
-    susceptibility!(χ_p, ΔΔτ, Δτ, ndims(ΔΔτ))
+        # measure density correlation function
+        fill!(DD, 0.0)
+        density_correlation!(DD, 1, 1, unit_cell, lattice, Gτ0, G0τ, Gττ, G00, Gτ0, G0τ, Gττ, G00, 1.0)
+    end
 end

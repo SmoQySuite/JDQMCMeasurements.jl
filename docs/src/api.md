@@ -5,7 +5,6 @@
 - [`greens!`](@ref)
 - [`density_correlation!`](@ref)
 - [`spin_x_correlation!`](@ref)
-- [`spin_y_correlation!`](@ref)
 - [`spin_z_correlation!`](@ref)
 - [`pair_correlation!`](@ref)
 - [`bond_correlation!`](@ref)
@@ -14,7 +13,6 @@
 greens!
 density_correlation!
 spin_x_correlation!
-spin_y_correlation!
 spin_z_correlation!
 pair_correlation!
 bond_correlation!

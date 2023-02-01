@@ -1,7 +1,7 @@
 @doc raw"""
-    greens!(G::AbstractArray{C}, a::Int, b::Int, 
+    greens!(G::AbstractArray{C,D}, a::Int, b::Int, 
             unit_cell::UnitCell{D}, lattice::Lattice{D},
-            Gτ0::AbstractArray{T,3}, sgn::T=one(T)) where {D, C<:Complex, T<:Number}
+            G_τ0::AbstractMatrix{T}, sgn::T=one(T)) where {D, C<:Number, T<:Number}
 
 Measure the unequal time Green's function averaged over translation symmetry
 ```math
@@ -9,51 +9,27 @@ G_{\sigma,\mathbf{r}}^{a,b}(\tau)=\frac{1}{N}\sum_{\mathbf{i}}G_{\sigma,\mathbf{
 =\frac{1}{N}\sum_{\mathbf{i}}\langle\hat{\mathcal{T}}\hat{a}_{\sigma,\mathbf{i}+\mathbf{r}}^{\phantom{\dagger}}(\tau)\hat{b}_{\sigma,\mathbf{i}}^{\dagger}(0)\rangle,
 ```
 with the result being added to `G`.
-"""
-function greens!(G::AbstractArray{C}, a::Int, b::Int, 
-                 unit_cell::UnitCell{D}, lattice::Lattice{D},
-                 Gτ0::AbstractArray{T,3}, sgn::T=one(T)) where {D, C<:Complex, T<:Number}
 
-    # length of imaginary time axis
-    Lτ = size(G,D+1) - 1
+# Fields
+
+- `G::AbstractArray{C,D}`: Array the green's function ``G_{\sigma,\mathbf{r}}^{a,b}(\tau)`` is written to.
+- `a::Int`: Index specifying an orbital species in the unit cell.
+- `b::Int`: Index specifying an orbital species in the unit cell.
+- `unit_cell::UnitCell{D}`: Defines unit cell.
+- `lattice::Lattice{D}`: Specifies size of finite lattice.
+- `G_τ0::AbstractMatrix{T}`: The matrix ``G(\tau,0).``
+- `sgn::T=one(T)`: The sign of the weight appearing in a DQMC simulation.
+"""
+function greens!(G::AbstractArray{C,D}, a::Int, b::Int, 
+                 unit_cell::UnitCell{D}, lattice::Lattice{D},
+                 G_τ0::AbstractMatrix{T}, sgn::C=one(C)) where {D, C<:Number, T<:Number}
 
     # construct the relevant bond definition
-    d = Bond((b,a), zeros(Int, D))
-
-    # iterate over imaginary time
-    for l in 0:Lτ
-        # get green's function for τ=Δτ⋅(l-1)
-        G_τ = selectdim(G, ndims(G), l+1)
-        # get G(τ,0)
-        Gτ0_τ = @view Gτ0[:,:,l+1]
-        # average green's function over translation symmetry
-        contract_Gr0!(G_τ, Gτ0_τ, d, 1, unit_cell, lattice, sgn)
-    end
-
-    return nothing
-end
-
-@doc raw"""
-    greens!(G::AbstractArray{C}, a::Int, b::Int, 
-            unit_cell::UnitCell{D}, lattice::Lattice{D},
-            G00::AbstractMatrix{T}, sgn::T=one(T)) where {D, C<:Complex, T<:Number}
-
-Measure the equal time Green's function averaged over translation symmetry
-```math
-G_{\sigma,\mathbf{r}}^{a,b}=\frac{1}{N}\sum_{\mathbf{i}}G_{\sigma,\mathbf{i}+\mathbf{r},\mathbf{i}}^{a,b}(0,0)
-=\frac{1}{N}\sum_{\mathbf{i}}\langle\hat{a}_{\sigma,\mathbf{i}+\mathbf{r}}^{\phantom{\dagger}}\hat{b}_{\sigma,\mathbf{i}}^{\dagger}\rangle,
-```
-with the result being added to `G`.
-"""
-function greens!(G::AbstractArray{C}, a::Int, b::Int, 
-                 unit_cell::UnitCell{D}, lattice::Lattice{D},
-                 G00::AbstractMatrix{T}, sgn::T=one(T)) where {D, C<:Complex, T<:Number}
-    
-    # construct the relevant bond definition
-    d = Bond((b,a), zeros(Int, D))
+    z = @SVector zeros(Int, D)
+    d = Bond((b,a), z)::Bond{D}
 
     # average green's function over translation symmetry
-    contract_Gr0!(G, G00, d, 1, unit_cell, lattice, sgn)
+    contract_Gr0!(G, G_τ0, d, 1, unit_cell, lattice, sgn)
 
     return nothing
 end
