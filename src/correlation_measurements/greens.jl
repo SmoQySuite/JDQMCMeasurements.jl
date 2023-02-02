@@ -22,7 +22,7 @@ with the result being added to `G`.
 """
 function greens!(G::AbstractArray{C,D}, a::Int, b::Int, 
                  unit_cell::UnitCell{D}, lattice::Lattice{D},
-                 G_τ0::AbstractMatrix{T}, sgn::C=one(C)) where {D, C<:Number, T<:Number}
+                 G_τ0::AbstractMatrix{T}, sgn::T=one(T)) where {D, C<:Number, T<:Number}
 
     # construct the relevant bond definition
     z = @SVector zeros(Int, D)
