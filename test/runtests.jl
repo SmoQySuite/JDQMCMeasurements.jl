@@ -62,6 +62,11 @@ using LatticeUtilities
         K[j,i] = -conj(t)
     end
 
+    # arrays of hopping amplitudes
+    t1 = fill(t, lattice.L...)
+    t2 = fill(t, lattice.L...)
+    t3 = fill(t, lattice.L...)
+
     # construct diagonal on-site energy matrix
     V = fill(-μ, N)
 
@@ -95,8 +100,8 @@ using LatticeUtilities
     # make sure density correlation D(0,r) ≈ D(β,r)
     @test DD0 ≈ DDβ
 
-    # make on-site density correlation is correct
-    @test DD0[1,1] ≈ 1.5
+    # # make on-site density correlation is correct
+    @test DD0[1,1] ≈ 0.5
 
     # make sure two methods for calculating ⟨N²⟩ agree
     DD0 = zeros(Complex{Float64}, lattice.L...)
@@ -106,7 +111,7 @@ using LatticeUtilities
     density_correlation!(DD0, 2, 2, unit_cell, lattice, Gτ0, G0τ, Gττ, G00, Gτ0, G0τ, Gττ, G00, 1.0)
     density_correlation!(DD0, 1, 2, unit_cell, lattice, Gτ0, G0τ, Gττ, G00, Gτ0, G0τ, Gττ, G00, 1.0)
     density_correlation!(DD0, 2, 1, unit_cell, lattice, Gτ0, G0τ, Gττ, G00, Gτ0, G0τ, Gττ, G00, 1.0)
-    @test measure_Nsqrd(G00, G00) ≈ real(lattice.N*sum(DD0))
+    @test measure_Nsqrd(G00, G00) ≈ real(lattice.N*sum(DD0)) + N^2
 
     # initialize correlation containers
     G = zeros(Complex{Float64}, lattice.L...)
@@ -115,6 +120,7 @@ using LatticeUtilities
     SzSz = zeros(Complex{Float64}, lattice.L...)
     SxSx = zeros(Complex{Float64}, lattice.L...)
     BB = zeros(Complex{Float64}, lattice.L...)
+    CC = zeros(Complex{Float64}, lattice.L...)
 
     # iterate of possible imaginary time displacements
     @testset for l in 0:Lτ
@@ -157,7 +163,11 @@ using LatticeUtilities
         pair_correlation!(PP, bond_1, bond_1, unit_cell, lattice, Gτ0, Gτ0, 1.0)
 
         # measure density correlation function
-        fill!(DD, 0.0)
+        fill!(DD, 0)
         density_correlation!(DD, 1, 1, unit_cell, lattice, Gτ0, G0τ, Gττ, G00, Gτ0, G0τ, Gττ, G00, 1.0)
+
+        # measure current correlation function
+        fill!(CC, 0)
+        current_correlation!(CC, bond_1, bond_1, t1, t1, unit_cell, lattice, Gτ0, G0τ, Gττ, G00, Gτ0, G0τ, Gττ, G00, 1.0)
     end
 end

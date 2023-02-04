@@ -6,8 +6,11 @@
 
 Calculate the unequal-time spin-spin correlation function in the ``\hat{z}`` direction, given by
 ```math
-\mathcal{S}_{z,\mathbf{r}}^{a,b}(\tau)=\frac{1}{N}\sum_{\mathbf{i}}\mathcal{S}_{z,\mathbf{i}+\mathbf{r},\mathbf{i}}^{ab}(\tau,0)
-=\frac{1}{N}\sum_{\mathbf{i}}\big\langle\hat{S}_{z,a,\mathbf{i}+\mathbf{r}}(\tau)\hat{S}_{z,b,\mathbf{i}}(0)\big\rangle,
+\begin{align*}
+\mathcal{S}_{z,\mathbf{r}}^{a,b}(\tau)=\frac{1}{N}\sum_{\mathbf{i}}\mathcal{S}_{z,\mathbf{i}+\mathbf{r},\mathbf{i}}^{ab}(\tau,0) 
+    = & \frac{1}{N}\sum_{\mathbf{i}}\big\langle\hat{S}_{z,a,\mathbf{i}+\mathbf{r}}(\tau)\hat{S}_{z,b,\mathbf{i}}(0)\big\rangle
+      - \langle \hat{S}_{z,a}(\tau) \rangle \langle \hat{S}_{z,b}(0) \rangle,
+\end{align*}
 ```
 where the spin-``\hat{z}`` operator is given by
 ```math
@@ -66,6 +69,13 @@ function spin_z_correlation!(SzSz::AbstractArray{C,D}, a::Int, b::Int, unit_cell
     contract_G0r_Gr0!(SzSz, Gup_0τ, Gup_τ0, b_ba, b_ab, -1, unit_cell, lattice, sgn)
     # SzSz(τ,r) = SzSz(τ,r) + 1/N sum_i G₋(b,i,0|a,i+r,τ)⋅G₋(a,i+r,τ|b,i,0)
     contract_G0r_Gr0!(SzSz, Gdn_0τ, Gdn_τ0, b_ba, b_ab, -1, unit_cell, lattice, sgn)
+
+    # calculate ⟨Sz(a,τ)⟩ = ⟨n₊(a,τ) - n₋(a,τ)⟩
+    Sz_a = measure_n(Gup_ττ, a, unit_cell) - measure_n(Gdn_ττ, a, unit_cell)
+    # calculate ⟨Sz(b,0)⟩ = ⟨n₊(b,0) - n₋(b,0)⟩
+    Sz_b = measure_n(Gup_00, b, unit_cell) - measure_n(Gdn_00, b, unit_cell)
+    # SzSz(τ,r) = SzSz(τ,r) - ⟨Sz(a,τ)⟩⋅⟨Sz(b,0)⟩
+    @. SzSz = SzSz - Sz_a * Sz_b
 
     return nothing
 end

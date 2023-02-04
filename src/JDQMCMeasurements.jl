@@ -42,8 +42,12 @@ export spin_z_correlation!
 include("correlation_measurements/pair_correlation.jl")
 export pair_correlation!
 
-# impelement bond correlation function
+# implement bond correlation function
 include("correlation_measurements/bond_correlation.jl")
 export bond_correlation!
+
+# implement current correlation function
+include("correlation_measurements/current_correlation.jl")
+export current_correlation!
 
 end

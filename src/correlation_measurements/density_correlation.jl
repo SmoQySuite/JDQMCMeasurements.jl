@@ -6,8 +6,13 @@
 
 Calculate the unequal-time density-density (charge) correlation function
 ```math
-\mathcal{D}_{\mathbf{r}}^{a,b}(\tau) = \frac{1}{N}\sum_{\mathbf{i}}\mathcal{D}_{\mathbf{i}+\mathbf{r},\mathbf{i}}^{a,b}(\tau,0)
-= \frac{1}{N}\sum_{\mathbf{i}}\langle\hat{n}_{a,\mathbf{i}+\mathbf{r}}(\tau)\hat{n}_{b,\mathbf{i}}(0)\rangle,
+\begin{align*}
+\mathcal{D}_{\mathbf{r}}^{a,b}(\tau)
+    & = \frac{1}{N}\sum_{\mathbf{i}} \mathcal{D}_{\mathbf{i}+\mathbf{r},\mathbf{i}}^{a,b}(\tau,0)
+        - \langle \hat{n}_{a}(\tau) \rangle \langle \hat{n}_{b}(0) \rangle \\
+    & = \frac{1}{N}\sum_{\mathbf{i}} \langle \hat{n}_{a,\mathbf{i} + \mathbf{r}}(\tau)\hat{n}_{b,\mathbf{i}}(0) \rangle
+        - \Big[ \frac{1}{N} \sum_{\mathbf{i}} \langle \hat{n}_{a,\mathbf{i}}(\tau) \rangle \Big] \cdot \Big[ \frac{1}{N} \sum_{\mathbf{j}} \langle \hat{n}_{b,\mathbf{j}}(0) \Big],
+\end{align*}
 ```
 where ``\hat{n}_{b,\mathbf{i}} = (\hat{n}_{\uparrow, b, \mathbf{i}} + \hat{n}_{\downarrow, b, \mathbf{i}})``
 and ``\hat{n}_{\sigma, b,\mathbf{i}} = \hat{b}^\dagger_{\sigma, \mathbf{i}} \hat{b}_{\sigma, \mathbf{i}}``
@@ -46,7 +51,7 @@ function density_correlation!(DD::AbstractArray{C,D}, a::Int, b::Int, unit_cell:
     # DD(τ,r) = DD(τ,r) + 4
     @. DD = DD + 4 * sgn
 
-    # DD(τ,r) = DD(τ,r) - 2/N sum_i G₊(a,i+r,τ|a,i+r,τ) = DD(τ,r) - 2/N sum_i G₋(a,i,τ|a,i,τ)
+    # DD(τ,r) = DD(τ,r) - 2/N sum_i G₊(a,i+r,τ|a,i+r,τ) = DD(τ,r) - 2/N sum_i G₊(a,i,τ|a,i,τ)
     contract_G00!(DD, Gup_ττ, a, a, -2, unit_cell, lattice, sgn)
     # DD(τ,r) = DD(τ,r) - 2/N sum_i G₋(a,i+r,τ|a,i+r,τ) = DD(τ,r) - 2/N sum_i G₋(a,i,τ|a,i,τ)
     contract_G00!(DD, Gdn_ττ, a, a, -2, unit_cell, lattice, sgn)
@@ -70,6 +75,15 @@ function density_correlation!(DD::AbstractArray{C,D}, a::Int, b::Int, unit_cell:
     contract_G0r_Gr0!(DD, Gup_0τ, Gup_τ0, b_ba, b_ab, -1, unit_cell, lattice, sgn)
     # DD(τ,r) = DD(τ,r) - 1/N sum_i G₋(b,i,0|a,i+r,τ)⋅G₋(a,i+r,τ|b,i,0)
     contract_G0r_Gr0!(DD, Gdn_0τ, Gdn_τ0, b_ba, b_ab, -1, unit_cell, lattice, sgn)
+
+    # calculate ⟨n(a,τ)⟩
+    n_a = measure_n(Gup_ττ, a, unit_cell) + measure_n(Gdn_ττ, a, unit_cell)
+
+    # calculate ⟨n(b,0)⟩
+    n_b = measure_n(Gup_00, b, unit_cell) + measure_n(Gdn_00, b, unit_cell)
+
+    # DD(τ,r) = DD(τ,r) - ⟨n(a,τ)⟩⋅⟨n(b,0)⟩
+    @. DD = DD - n_a * n_b
     
     return nothing
 end

@@ -6,14 +6,18 @@
 
 Calculate the uneqaul-time bond-bond correlation function
 ```math
+\begin{align*}
 \mathcal{B}_{\mathbf{r}}^{(\mathbf{r}',a,b),(\mathbf{r}'',c,d)}(\tau) =
-    \frac{1}{N}\sum_{\mathbf{i}} \langle[\hat{B}_{\uparrow,\mathbf{i}+\mathbf{r},(\mathbf{r}',a,b)}(\tau)+\hat{B}_{\downarrow,\mathbf{i}+\mathbf{r},(\mathbf{r}',a,b)}(\tau)]
-                                   \cdot[\hat{B}_{\uparrow,\mathbf{i},(\mathbf{r}'',c,d)}(0)+\hat{B}_{\downarrow,\mathbf{i},(\mathbf{r}'',c,d)}(0)]\rangle,
+    & \frac{1}{N}\sum_{\mathbf{i}} \langle[\hat{B}_{\uparrow,\mathbf{i}+\mathbf{r},(\mathbf{r}',a,b)}(\tau)+\hat{B}_{\downarrow,\mathbf{i}+\mathbf{r},(\mathbf{r}',a,b)}(\tau)]
+                                   \cdot[\hat{B}_{\uparrow,\mathbf{i},(\mathbf{r}'',c,d)}(0)+\hat{B}_{\downarrow,\mathbf{i},(\mathbf{r}'',c,d)}(0)]\rangle \\
+    & - \langle \hat{B}_{(\mathbf{r}',a,b)}(\tau) \rangle \langle \hat{B}_{(\mathbf{r}'',c,d)}(0) \rangle,
+\end{align*}
 ```
 where the
 ```math
-\hat{B}_{\sigma,\mathbf{i},(\mathbf{r},a,b)} = \hat{a}_{\sigma,\mathbf{i}+\mathbf{r}}^{\dagger}\hat{b}_{\sigma,\mathbf{i}}^{\phantom{\dagger}}
-                                             + \hat{b}_{\sigma,\mathbf{i}}^{\dagger}\hat{a}_{\sigma,\mathbf{i}+\mathbf{r}}^{\phantom{\dagger}}
+\hat{B}_{\sigma,\mathbf{i},(\mathbf{r},a,b)}
+    = \hat{a}_{\sigma,\mathbf{i}+\mathbf{r}}^{\dagger}\hat{b}_{\sigma,\mathbf{i}}^{\phantom{\dagger}}
+    + \hat{b}_{\sigma,\mathbf{i}}^{\dagger}\hat{a}_{\sigma,\mathbf{i}+\mathbf{r}}^{\phantom{\dagger}}
 ```
 is the bond operator.
 
@@ -43,9 +47,15 @@ function bond_correlation!(BB::AbstractArray{C,D}, b′::Bond{D}, b″::Bond{D},
     b, a = b′.orbitals
     r′ = b′.displacement
 
+    # -b′ = -r′ + (r_b - r_a)
+    nb′ = Bond((a,b), -r′)
+
     # b″ = r″ + (r_c - r_d)
     d, c = b″.orbitals
     r″ = b″.displacement
+
+    # -b″ = -r″ + (r_d - r_c)
+    nb″ = Bond((c,d), -r″)
 
     # zero vector
     z = @SVector zeros(Int, D)
@@ -109,6 +119,31 @@ function bond_correlation!(BB::AbstractArray{C,D}, b′::Bond{D}, b″::Bond{D},
     contract_G0r_Gr0!(BB, Gup_ττ, Gdn_00, b, a, d, c, z, r′, z, r″, 1, unit_cell, lattice, sgn)
     # BB(τ,r) = BB(τ,r) + G₋(b,i+r,τ|a,i+r+r′,τ)⋅G₊(d,i,0|c,i+r″,0)
     contract_G0r_Gr0!(BB, Gdn_ττ, Gup_00, b, a, d, c, z, r′, z, r″, 1, unit_cell, lattice, sgn)
+
+    # calculate G₊(r′,a,b,τ)
+    Gup_b′ = average_Gr0(Gup_ττ, b′, unit_cell, lattice, sgn)
+    # calculate G₋(r′,a,b,τ)
+    Gdn_b′ = average_Gr0(Gdn_ττ, b′, unit_cell, lattice, sgn)
+    # calculate G₊(-r′,b,a,τ)
+    Gup_nb′ = average_Gr0(Gup_ττ, nb′, unit_cell, lattice, sgn)
+    # calculate G₋(-r′,b,a,τ)
+    Gdn_nb′ = average_Gr0(Gdn_ττ, nb′, unit_cell, lattice, sgn)
+    # calculate ⟨B̂(r′,a,b,τ)⟩
+    B_b′ = -(Gup_b′ + Gdn_b′) - (Gup_nb′ + Gdn_nb′)
+
+    # calculate G₊(r″,c,d,0)
+    Gup_b″ = average_Gr0(Gup_00, b″, unit_cell, lattice, sgn)
+    # calculate G₋(r″,c,d,0)
+    Gdn_b″ = average_Gr0(Gdn_00, b″, unit_cell, lattice, sgn)
+    # calculate G₊(-r″,d,c,0)
+    Gup_nb″ = average_Gr0(Gup_00, nb″, unit_cell, lattice, sgn)
+    # calculate G₋(-r″,d,c,0)
+    Gdn_nb″ = average_Gr0(Gdn_00, nb″, unit_cell, lattice, sgn)
+    # calculate ⟨B̂(r″,c,d,0)⟩
+    B_b″ = -(Gup_b″ + Gdn_b″) - (Gup_nb″ + Gdn_nb″)
+
+    # BB(τ,r) = BB(τ,r) - ⟨B̂(r′,a,b,τ)⟩⋅⟨B̂(r″,c,d,0)⟩
+    @. BB = BB - B_b′ * B_b″
 
     return nothing
 end
