@@ -113,36 +113,5 @@ function bond_correlation!(BB::AbstractArray{C,D}, b′::Bond{D}, b″::Bond{D},
     # BB(τ,r) = BB(τ,r) + G₋(b,i+r,τ|a,i+r+r′,τ)⋅G₊(d,i,0|c,i+r″,0)
     contract_G0r_Gr0!(BB, Gdn_ττ, Gup_00, b, a, d, c, z, r′, z, r″, 1, unit_cell, lattice, sgn)
 
-    # # -b′ = -r′ + (r_b - r_a)
-    # nb′ = Bond((a,b), -r′)
-
-    # # -b″ = -r″ + (r_d - r_c)
-    # nb″ = Bond((c,d), -r″)
-
-    # # calculate G₊(r′,a,b,τ)
-    # Gup_b′ = average_Gr0(Gup_ττ, b′, unit_cell, lattice, sgn)
-    # # calculate G₋(r′,a,b,τ)
-    # Gdn_b′ = average_Gr0(Gdn_ττ, b′, unit_cell, lattice, sgn)
-    # # calculate G₊(-r′,b,a,τ)
-    # Gup_nb′ = average_Gr0(Gup_ττ, nb′, unit_cell, lattice, sgn)
-    # # calculate G₋(-r′,b,a,τ)
-    # Gdn_nb′ = average_Gr0(Gdn_ττ, nb′, unit_cell, lattice, sgn)
-    # # calculate ⟨B̂(r′,a,b,τ)⟩
-    # B_b′ = -(Gup_b′ + Gdn_b′) - (Gup_nb′ + Gdn_nb′)
-
-    # # calculate G₊(r″,c,d,0)
-    # Gup_b″ = average_Gr0(Gup_00, b″, unit_cell, lattice, sgn)
-    # # calculate G₋(r″,c,d,0)
-    # Gdn_b″ = average_Gr0(Gdn_00, b″, unit_cell, lattice, sgn)
-    # # calculate G₊(-r″,d,c,0)
-    # Gup_nb″ = average_Gr0(Gup_00, nb″, unit_cell, lattice, sgn)
-    # # calculate G₋(-r″,d,c,0)
-    # Gdn_nb″ = average_Gr0(Gdn_00, nb″, unit_cell, lattice, sgn)
-    # # calculate ⟨B̂(r″,c,d,0)⟩
-    # B_b″ = -(Gup_b″ + Gdn_b″) - (Gup_nb″ + Gdn_nb″)
-
-    # # BB(τ,r) = BB(τ,r) - ⟨B̂(r′,a,b,τ)⟩⋅⟨B̂(r″,c,d,0)⟩
-    # @. BB = BB - B_b′ * B_b″
-
     return nothing
 end
