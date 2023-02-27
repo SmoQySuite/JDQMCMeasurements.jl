@@ -101,7 +101,7 @@ using LatticeUtilities
     @test DD0 ≈ DDβ
 
     # # make on-site density correlation is correct
-    @test DD0[1,1] ≈ 0.5
+    @test DD0[1,1] ≈ 1.5
 
     # make sure two methods for calculating ⟨N²⟩ agree
     DD0 = zeros(Complex{Float64}, lattice.L...)
@@ -111,7 +111,7 @@ using LatticeUtilities
     density_correlation!(DD0, 2, 2, unit_cell, lattice, Gτ0, G0τ, Gττ, G00, Gτ0, G0τ, Gττ, G00, 1.0)
     density_correlation!(DD0, 1, 2, unit_cell, lattice, Gτ0, G0τ, Gττ, G00, Gτ0, G0τ, Gττ, G00, 1.0)
     density_correlation!(DD0, 2, 1, unit_cell, lattice, Gτ0, G0τ, Gττ, G00, Gτ0, G0τ, Gττ, G00, 1.0)
-    @test measure_Nsqrd(G00, G00) ≈ real(lattice.N*sum(DD0)) + N^2
+    @test measure_Nsqrd(G00, G00) ≈ real(lattice.N*sum(DD0))
 
     # initialize correlation containers
     G = zeros(Complex{Float64}, lattice.L...)
@@ -131,6 +131,10 @@ using LatticeUtilities
         # calculate analytic time-displaced green's function matrices
         Gτ0 = retarded_greens(τ, β, ϵ, U)[1]
         G0τ = advanced_greens(τ, β, ϵ, U)[1]
+
+        # measure greens function
+        fill!(G, 0)
+        greens!(G, 1, 1, unit_cell, lattice, Gτ0, 1.0)
 
         # make sure spin-x and spin-y measurements agree
         fill!(SzSz, 0)
