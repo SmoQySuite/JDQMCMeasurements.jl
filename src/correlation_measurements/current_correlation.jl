@@ -54,9 +54,9 @@ function current_correlation!(CC::AbstractArray{C,D},
     contract_Grr_G00!(CC, Gdn_ττ, Gdn_00, t′, t″, a, b, d, c, r′, z, z, r″, +1, unit_cell, lattice, sgn)
 
     # CC(τ,r) -= 1/N sum_i [t(a,i+r+r′|b,i+r)⋅t(c,i+r″|d,i)]⋅G₊(d,i,0|b,i+r,τ)⋅G₊(a,i+r+r′,τ|c,i+r″,0)
-    contract_Grr_G00!(CC, Gup_0τ, Gup_τ0, t′, t″, a, b, c, d, z, z, r′, r″, -1, unit_cell, lattice, sgn)
+    contract_G0r_Gr0!(CC, Gup_0τ, Gup_τ0, t′, t″, d, b, a, c, z, z, r′, r″, -1, unit_cell, lattice, sgn)
     # CC(τ,r) -= 1/N sum_i [t(a,i+r+r′|b,i+r)⋅t(c,i+r″|d,i)]⋅G₋(d,i,0|b,i+r,τ)⋅G₋(a,i+r+r′,τ|c,i+r″,0)
-    contract_Grr_G00!(CC, Gdn_0τ, Gdn_τ0, t′, t″, a, b, c, d, z, z, r′, r″, -1, unit_cell, lattice, sgn)
+    contract_G0r_Gr0!(CC, Gdn_0τ, Gdn_τ0, t′, t″, d, b, a, c, z, z, r′, r″, -1, unit_cell, lattice, sgn)
 
     # CC(τ,r) += 1/N sum_i [t(a,i+r+r′|b,i+r)⋅t(c,i+r″|d,i)]⋅G₊(b,i+r,τ|a,i+r+r′,τ)⋅G₊(c,i+r″,0|d,i,0)
     contract_Grr_G00!(CC, Gup_ττ, Gup_00, t′, t″, b, a, c, d, z, r′, r″, z, +1, unit_cell, lattice, sgn)
@@ -97,7 +97,6 @@ function current_correlation!(CC::AbstractArray{C,D},
     contract_Grr_G00!(CC, Gup_ττ, Gup_00, t′, t″, b, a, d, c, z, r′, z, r″, -1, unit_cell, lattice, sgn)
     # CC(τ,r) -= 1/N sum_i [t(a,i+r+r′|b,i+r)⋅t(c,i+r″|d,i)]⋅G₋(b,i+r,τ|a,i+r+r′,τ)⋅G₊(d,i,0|c,i+r″,0)
     contract_Grr_G00!(CC, Gdn_ττ, Gup_00, t′, t″, b, a, d, c, z, r′, z, r″, -1, unit_cell, lattice, sgn)
-
 
     return nothing
 end
