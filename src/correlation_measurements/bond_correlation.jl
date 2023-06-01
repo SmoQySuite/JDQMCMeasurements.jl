@@ -84,9 +84,9 @@ function bond_correlation!(BB::AbstractArray{C,D}, b′::Bond{D}, b″::Bond{D},
     contract_G0r_Gr0!(BB, Gdn_0τ, Gdn_τ0, c, a, b, d, r″, r′, z, z, -1, unit_cell, lattice, sgn)
 
     # BB(τ,r) = BB(τ,r) + G₊(b,i+r,τ|a,i+r+r′,τ)⋅G₊(d,i,0|c,i+r″,0)
-    contract_G0r_Gr0!(BB, Gup_ττ, Gup_00, b, a, d, c, z, r′, z, r″, 1, unit_cell, lattice, sgn)
+    contract_Grr_G00!(BB, Gup_ττ, Gup_00, b, a, d, c, z, r′, z, r″, 1, unit_cell, lattice, sgn)
     # BB(τ,r) = BB(τ,r) + G₋(b,i+r,τ|a,i+r+r′,τ)⋅G₋(d,i,0|c,i+r″,0)
-    contract_G0r_Gr0!(BB, Gdn_ττ, Gdn_00, b, a, d, c, z, r′, z, r″, 1, unit_cell, lattice, sgn)
+    contract_Grr_G00!(BB, Gdn_ττ, Gdn_00, b, a, d, c, z, r′, z, r″, 1, unit_cell, lattice, sgn)
 
     # BB(τ,r) = BB(τ,r) - G₊(d,i,0|a,i+r+r′)⋅G₊(b,i+r,τ|c,i+r″,0)
     contract_G0r_Gr0!(BB, Gup_0τ, Gup_τ0, d, a, b, c, z, r′, z, r″, -1, unit_cell, lattice, sgn)
