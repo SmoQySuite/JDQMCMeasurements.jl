@@ -39,6 +39,25 @@ function density_correlation!(DD::AbstractArray{C,D}, a::Int, b::Int, unit_cell:
                               Gdn_τ0::AbstractMatrix{T}, Gdn_0τ::AbstractMatrix{T}, Gdn_ττ::AbstractMatrix{T}, Gdn_00::AbstractMatrix{T},
                               sgn::T=one(T)) where {D, C<:Number, T<:Number}
 
+    # up-up density-density correlation
+    density_correlation!(DD, a, b, unit_cell, lattice, Gup_τ0, Gup_0τ, Gup_ττ, Gup_00, +1, +1, sgn)
+
+    # dn-dn density-density correlation
+    density_correlation!(DD, a, b, unit_cell, lattice, Gdn_τ0, Gdn_0τ, Gdn_ττ, Gdn_00, -1, -1, sgn)
+
+    # up-dn density-density correlation
+    density_correlation!(DD, a, b, unit_cell, lattice, Gup_τ0, Gup_0τ, Gup_ττ, Gdn_00, +1, -1, sgn)
+
+    # dn-up density-density correlation
+    density_correlation!(DD, a, b, unit_cell, lattice, Gdn_τ0, Gdn_0τ, Gdn_ττ, Gup_00, -1, +1, sgn)
+    
+    return nothing
+end
+
+function density_correlation!(DD::AbstractArray{C,D}, a::Int, b::Int, unit_cell::UnitCell{D}, lattice::Lattice{D},
+                              Gσ_τ0::AbstractMatrix{T},  Gσ_0τ::AbstractMatrix{T},  Gσ_ττ::AbstractMatrix{T}, Gσ′_00::AbstractMatrix{T},
+                              σ′::Int, σ::Int, sgn::T=one(T)) where {D, C<:Number, T<:Number}
+
     # define zero unit cell displacement bonds for all combos of a and b orbitals
     z = @SVector zeros(Int,D)
     b_aa = Bond((a,a), z)::Bond{D} # displacement r_a - r_a = 0
@@ -46,33 +65,24 @@ function density_correlation!(DD::AbstractArray{C,D}, a::Int, b::Int, unit_cell:
     b_ab = Bond((b,a), z)::Bond{D} # displacement r_a - r_b
     b_ba = Bond((a,b), z)::Bond{D} # displacement r_b - r_a
 
-    # DD(τ,r) = DD(τ,r) + 4
-    @. DD = DD + 4 * sgn
+    # DD(τ,r) = DD(τ,r) + 1
+    @. DD = DD + 1 * sgn
 
-    # DD(τ,r) = DD(τ,r) - 2/N sum_i G₊(a,i+r,τ|a,i+r,τ) = DD(τ,r) - 2/N sum_i G₊(a,i,τ|a,i,τ)
-    contract_G00!(DD, Gup_ττ, a, a, -2, unit_cell, lattice, sgn)
-    # DD(τ,r) = DD(τ,r) - 2/N sum_i G₋(a,i+r,τ|a,i+r,τ) = DD(τ,r) - 2/N sum_i G₋(a,i,τ|a,i,τ)
-    contract_G00!(DD, Gdn_ττ, a, a, -2, unit_cell, lattice, sgn)
+    # DD(τ,r) = DD(τ,r) - 1/N sum_i Gσ(a,i+r,τ|a,i+r,τ) = DD(τ,r) - 1/N sum_i Gσ(a,i,τ|a,i,τ)
+    contract_G00!(DD, Gσ_ττ, a, a, -1, unit_cell, lattice, sgn)
 
-    # DD(τ,r) = DD(τ,r) - 2/N sum_i G₊(b,i,0|b,i,0)
-    contract_G00!(DD, Gup_00, b, b, -2, unit_cell, lattice, sgn)
-    # DD(τ,r) = DD(τ,r) - 2/N sum_i G₋(b,i,0|b,i,0)
-    contract_G00!(DD, Gdn_00, b, b, -2, unit_cell, lattice, sgn)
+    # DD(τ,r) = DD(τ,r) - 1/N sum_i Gσ'(b,i,0|b,i,0)
+    contract_G00!(DD, Gσ′_00, b, b, -1, unit_cell, lattice, sgn)
 
-    # DD(τ,r) = DD(τ,r) + 1/N sum_i G₊(a,i+r,τ|a,i+r,τ)⋅G₊(b,i,0|b,i,0)
-    contract_Grr_G00!(DD, Gup_ττ, Gup_00, b_aa, b_bb, 1, unit_cell, lattice, sgn)
-    # DD(τ,r) = DD(τ,r) + 1/N sum_i G₋(a,i+r,τ|a,i+r,τ)⋅G₋(b,i,0|b,i,0)
-    contract_Grr_G00!(DD, Gdn_ττ, Gdn_00, b_aa, b_bb, 1, unit_cell, lattice, sgn)
+    # DD(τ,r) = DD(τ,r) + 1/N sum_i Gσ(a,i+r,τ|a,i+r,τ)⋅Gσ'(b,i,0|b,i,0)
+    contract_Grr_G00!(DD, Gσ_ττ, Gσ′_00, b_aa, b_bb, 1, unit_cell, lattice, sgn)
 
-    # DD(τ,r) = DD(τ,r) + 1/N sum_i G₊(a,i+r,τ|a,i+r,τ)⋅G₋(b,i,0|b,i,0)
-    contract_Grr_G00!(DD, Gup_ττ, Gdn_00, b_aa, b_bb, 1, unit_cell, lattice, sgn)
-    # DD(τ,r) = DD(τ,r) + 1/N sum_i G₋(a,i+r,τ|a,i+r,τ)⋅G₊(b,i,0|b,i,0)
-    contract_Grr_G00!(DD, Gdn_ττ, Gup_00, b_aa, b_bb, 1, unit_cell, lattice, sgn)
+    # if spins of two density operators are the same i.e. δ(σ,σ′)
+    if σ == σ′
 
-    # DD(τ,r) = DD(τ,r) - 1/N sum_i G₊(b,i,0|a,i+r,τ)⋅G₊(a,i+r,τ|b,i,0)
-    contract_G0r_Gr0!(DD, Gup_0τ, Gup_τ0, b_ba, b_ab, -1, unit_cell, lattice, sgn)
-    # DD(τ,r) = DD(τ,r) - 1/N sum_i G₋(b,i,0|a,i+r,τ)⋅G₋(a,i+r,τ|b,i,0)
-    contract_G0r_Gr0!(DD, Gdn_0τ, Gdn_τ0, b_ba, b_ab, -1, unit_cell, lattice, sgn)
+        # DD(τ,r) = DD(τ,r) - 1/N sum_i δ(σ,σ′)⋅Gσ(b,i,0|a,i+r,τ)⋅Gσ(a,i+r,τ|b,i,0)
+        contract_G0r_Gr0!(DD, Gσ_0τ, Gσ_τ0, b_ba, b_ab, -1, unit_cell, lattice, sgn)
+    end
     
     return nothing
 end
