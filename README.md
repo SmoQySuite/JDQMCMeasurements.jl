@@ -29,3 +29,19 @@ To install [`JDQMCMeasurements.jl`](https://github.com/SmoQySuite/JDQMCMeasureme
 
 - [STABLE](https://SmoQySuite.github.io/JDQMCMeasurements.jl/stable/): Documentation for the latest version of the code published to the Julia [`General`](https://github.com/JuliaRegistries/General.git) registry.
 - [DEV](https://SmoQySuite.github.io/JDQMCMeasurements.jl/dev/): Documentation for the latest commit to the `master` branch.
+
+## Citation
+
+If you found this library to be useful in the course of academic work, please consider citing us:
+
+```bibtex
+@misc{SmoQyDQMC,
+      title={SmoQyDQMC.jl: A flexible implementation of determinant quantum Monte Carlo for Hubbard and electron-phonon interactions}, 
+      author={Benjamin Cohen-Stead and Sohan Malkaruge Costa and James Neuhaus and Andy Tanjaroon Ly and Yutan Zhang and Richard Scalettar and Kipton Barros and Steven Johnston},
+      year={2023},
+      eprint={2311.09395},
+      archivePrefix={arXiv},
+      primaryClass={cond-mat.str-el},
+      url={https://arxiv.org/abs/2311.09395}
+}
+```

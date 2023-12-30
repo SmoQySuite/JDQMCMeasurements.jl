@@ -1,9 +1,19 @@
 @doc raw"""
-    fourier_transform!(C::AbstractArray{Complex{T}}, a::Int, b::Int, dim::Int,
-                       unit_cell::UnitCell{D,T}, lattice::Lattice{D}) where {D, T<:AbstractFloat}
+    fourier_transform!(
+        C::AbstractArray{Complex{T}},
+        a::Int,
+        b::Int,
+        dims,
+        unit_cell::UnitCell{D,T},
+        lattice::Lattice{D}
+    ) where {D, T<:AbstractFloat}
 
-    fourier_transform!(C::AbstractArray{Complex{T}}, a::Int, b::Int,
-                       unit_cell::UnitCell{D,T}, lattice::Lattice{D}) where {D, T<:AbstractFloat}
+    fourier_transform!(C::AbstractArray{Complex{T}},
+        a::Int,
+        b::Int,
+        unit_cell::UnitCell{D,T},
+        lattice::Lattice{D}
+    ) where {D, T<:AbstractFloat}
 
 Calculate the fourier transform from position to momentum space
 ```math
@@ -11,19 +21,31 @@ Calculate the fourier transform from position to momentum space
 C_{\mathbf{k}}^{a,b}= & \sum_{\mathbf{r}}e^{{\rm -i}\mathbf{k}\cdot(\mathbf{r}+\mathbf{r}_{a}-\mathbf{r}_{b})}C_{\mathbf{r}}^{a,b}
 \end{align*}
 ```
-where ``a`` and ``b`` specify orbital species in the unit cell. Note that the array `C` is modified in-place. If `dim` is passed,
-iterate over this dimension of the array, performing a fourier transform on each slice.
+where ``a`` and ``b`` specify orbital species in the unit cell. Note that the array `C` is modified in-place. If `dims` is passed,
+iterate over these dimensions of the array, performing a fourier transform on each slice.
 """
-function fourier_transform!(C::AbstractArray{Complex{T}}, a::Int, b::Int, dim::Int, unit_cell::UnitCell{D,T}, lattice::Lattice{D}) where {D, T<:AbstractFloat}
+function fourier_transform!(
+    C::AbstractArray{Complex{T}},
+    a::Int,
+    b::Int,
+    dims,
+    unit_cell::UnitCell{D,T},
+    lattice::Lattice{D}
+) where {D, T<:AbstractFloat}
 
-    for C_l in eachslice(C, dims=dim)
+    for C_l in eachslice(C, dims=dims)
         fourier_transform!(C_l, a, b, unit_cell, lattice)
     end
 
     return nothing
 end
 
-function fourier_transform!(C::AbstractArray{Complex{T}}, a::Int, b::Int, unit_cell::UnitCell{D,T}, lattice::Lattice{D}) where {D, T<:AbstractFloat}
+function fourier_transform!(C::AbstractArray{Complex{T}},
+    a::Int,
+    b::Int,
+    unit_cell::UnitCell{D,T},
+    lattice::Lattice{D}
+) where {D, T<:AbstractFloat}
 
     # perform standard FFT from position to momentum space
     fft!(C)
