@@ -1,8 +1,13 @@
 @doc raw"""
-    density_correlation!(DD::AbstractArray{C,D}, a::Int, b::Int, unit_cell::UnitCell{D}, lattice::Lattice{D},
-                         Gup_τ0::AbstractMatrix{T}, Gup_0τ::AbstractMatrix{T}, Gup_ττ::AbstractMatrix{T}, Gup_00::AbstractMatrix{T},
-                         Gdn_τ0::AbstractMatrix{T}, Gdn_0τ::AbstractMatrix{T}, Gdn_ττ::AbstractMatrix{T}, Gdn_00::AbstractMatrix{T},
-                         sgn::T=one(T)) where {D, C<:Number, T<:Number}
+    density_correlation!(
+        DD::AbstractArray{C,D},
+        a::Int, b::Int, unit_cell::UnitCell{D}, lattice::Lattice{D},
+        Gup_τ0::AbstractMatrix{T}, Gup_0τ::AbstractMatrix{T},
+        Gup_ττ::AbstractMatrix{T}, Gup_00::AbstractMatrix{T},
+        Gdn_τ0::AbstractMatrix{T}, Gdn_0τ::AbstractMatrix{T},
+        Gdn_ττ::AbstractMatrix{T}, Gdn_00::AbstractMatrix{T},
+        sgn::T=one(T)
+    ) where {D, C<:Number, T<:Number}
 
 Calculate the unequal-time density-density (charge) correlation function
 ```math
@@ -34,10 +39,15 @@ with the result being added to the array `DD`.
 - `Gdn_00::AbstractMatrix{T}`: The matrix ``G_{\downarrow}(0,0).``
 - `sgn::T=one(T)`: The sign of the weight appearing in a DQMC simulation.
 """
-function density_correlation!(DD::AbstractArray{C,D}, a::Int, b::Int, unit_cell::UnitCell{D}, lattice::Lattice{D},
-                              Gup_τ0::AbstractMatrix{T}, Gup_0τ::AbstractMatrix{T}, Gup_ττ::AbstractMatrix{T}, Gup_00::AbstractMatrix{T},
-                              Gdn_τ0::AbstractMatrix{T}, Gdn_0τ::AbstractMatrix{T}, Gdn_ττ::AbstractMatrix{T}, Gdn_00::AbstractMatrix{T},
-                              sgn::T=one(T)) where {D, C<:Number, T<:Number}
+function density_correlation!(
+    DD::AbstractArray{C,D},
+    a::Int, b::Int, unit_cell::UnitCell{D}, lattice::Lattice{D},
+    Gup_τ0::AbstractMatrix{T}, Gup_0τ::AbstractMatrix{T},
+    Gup_ττ::AbstractMatrix{T}, Gup_00::AbstractMatrix{T},
+    Gdn_τ0::AbstractMatrix{T}, Gdn_0τ::AbstractMatrix{T},
+    Gdn_ττ::AbstractMatrix{T}, Gdn_00::AbstractMatrix{T},
+    sgn::T=one(T)
+) where {D, C<:Number, T<:Number}
 
     # up-up density-density correlation
     density_correlation!(DD, a, b, unit_cell, lattice, Gup_τ0, Gup_0τ, Gup_ττ, Gup_00, +1, +1, sgn)
@@ -55,9 +65,13 @@ function density_correlation!(DD::AbstractArray{C,D}, a::Int, b::Int, unit_cell:
 end
 
 @doc raw"""
-    density_correlation!(DD::AbstractArray{C,D}, a::Int, b::Int, unit_cell::UnitCell{D}, lattice::Lattice{D},
-                         Gσ_τ0::AbstractMatrix{T},  Gσ_0τ::AbstractMatrix{T},  Gσ_ττ::AbstractMatrix{T}, Gσ′_00::AbstractMatrix{T},
-                         σ′::Int, σ::Int, sgn::T=one(T)) where {D, C<:Number, T<:Number}
+    density_correlation!(
+        DD::AbstractArray{C,D},
+        a::Int, b::Int, unit_cell::UnitCell{D}, lattice::Lattice{D},
+        Gσ_τ0::AbstractMatrix{T}, Gσ_0τ::AbstractMatrix{T},
+        Gσ_ττ::AbstractMatrix{T}, Gσ′_00::AbstractMatrix{T},
+        σ::Int, σ′::Int, sgn::T=one(T)
+    ) where {D, C<:Number, T<:Number}
 
 Calculate the spin-resolved unequal-time density correlation function
 ```math
@@ -86,9 +100,13 @@ with the result being added to the array `DD`.
 - `σ′::Int`: The electron spin appearing in the ``\langle \hat{n} \rangle_{\sigma',b,\mathbf{i}}`` density operator.
 - `sgn::T=one(T)`: The sign of the weight appearing in a DQMC simulation.
 """
-function density_correlation!(DD::AbstractArray{C,D}, a::Int, b::Int, unit_cell::UnitCell{D}, lattice::Lattice{D},
-                              Gσ_τ0::AbstractMatrix{T},  Gσ_0τ::AbstractMatrix{T},  Gσ_ττ::AbstractMatrix{T}, Gσ′_00::AbstractMatrix{T},
-                              σ::Int, σ′::Int, sgn::T=one(T)) where {D, C<:Number, T<:Number}
+function density_correlation!(
+    DD::AbstractArray{C,D},
+    a::Int, b::Int, unit_cell::UnitCell{D}, lattice::Lattice{D},
+    Gσ_τ0::AbstractMatrix{T}, Gσ_0τ::AbstractMatrix{T},
+    Gσ_ττ::AbstractMatrix{T}, Gσ′_00::AbstractMatrix{T},
+    σ::Int, σ′::Int, sgn::T=one(T)
+) where {D, C<:Number, T<:Number}
 
     # define zero unit cell displacement bonds for all combos of a and b orbitals
     z = @SVector zeros(Int,D)

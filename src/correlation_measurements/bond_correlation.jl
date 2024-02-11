@@ -1,8 +1,13 @@
 @doc raw"""
-    bond_correlation!(BB::AbstractArray{C,D}, b′::Bond{D}, b″::Bond{D}, unit_cell::UnitCell{D}, lattice::Lattice{D},
-                      Gup_τ0::AbstractMatrix{T}, Gup_0τ::AbstractMatrix{T}, Gup_ττ::AbstractMatrix{T}, Gup_00::AbstractMatrix{T},
-                      Gdn_τ0::AbstractMatrix{T}, Gdn_0τ::AbstractMatrix{T}, Gdn_ττ::AbstractMatrix{T}, Gdn_00::AbstractMatrix{T},
-                      sgn::T=one(T)) where {D, C<:Number, T<:Number}
+    bond_correlation!(
+        BB::AbstractArray{C,D},
+        b′::Bond{D}, b″::Bond{D}, unit_cell::UnitCell{D}, lattice::Lattice{D},
+        Gup_τ0::AbstractMatrix{T}, Gup_0τ::AbstractMatrix{T},
+        Gup_ττ::AbstractMatrix{T}, Gup_00::AbstractMatrix{T},
+        Gdn_τ0::AbstractMatrix{T}, Gdn_0τ::AbstractMatrix{T},
+        Gdn_ττ::AbstractMatrix{T}, Gdn_00::AbstractMatrix{T},
+        sgn::T=one(T)
+    ) where {D, C<:Number, T<:Number}
 
 Calculate the uneqaul-time bond-bond correlation function
 ```math
@@ -37,10 +42,15 @@ is the bond operator.
 - `Gdn_00::AbstractMatrix{T}`: The matrix ``G_{\downarrow}(0,0).``
 - `sgn::T=one(T)`: The sign of the weight appearing in a DQMC simulation.
 """
-function bond_correlation!(BB::AbstractArray{C,D}, b′::Bond{D}, b″::Bond{D}, unit_cell::UnitCell{D}, lattice::Lattice{D},
-                           Gup_τ0::AbstractMatrix{T}, Gup_0τ::AbstractMatrix{T}, Gup_ττ::AbstractMatrix{T}, Gup_00::AbstractMatrix{T},
-                           Gdn_τ0::AbstractMatrix{T}, Gdn_0τ::AbstractMatrix{T}, Gdn_ττ::AbstractMatrix{T}, Gdn_00::AbstractMatrix{T},
-                           sgn::T=one(T)) where {D, C<:Number, T<:Number}
+function bond_correlation!(
+    BB::AbstractArray{C,D},
+    b′::Bond{D}, b″::Bond{D}, unit_cell::UnitCell{D}, lattice::Lattice{D},
+    Gup_τ0::AbstractMatrix{T}, Gup_0τ::AbstractMatrix{T},
+    Gup_ττ::AbstractMatrix{T}, Gup_00::AbstractMatrix{T},
+    Gdn_τ0::AbstractMatrix{T}, Gdn_0τ::AbstractMatrix{T},
+    Gdn_ττ::AbstractMatrix{T}, Gdn_00::AbstractMatrix{T},
+    sgn::T=one(T)
+) where {D, C<:Number, T<:Number}
 
     # up-up bond-bond correlation
     bond_correlation!(BB, b′, b″, unit_cell, lattice, Gup_τ0, Gup_0τ, Gup_ττ, Gup_00, +1, +1, sgn)
@@ -58,9 +68,13 @@ function bond_correlation!(BB::AbstractArray{C,D}, b′::Bond{D}, b″::Bond{D},
 end
 
 @doc raw"""
-    bond_correlation!(BB::AbstractArray{C,D}, b′::Bond{D}, b″::Bond{D}, unit_cell::UnitCell{D}, lattice::Lattice{D},
-                      Gσ′_τ0::AbstractMatrix{T}, Gσ′_0τ::AbstractMatrix{T}, Gσ′_ττ::AbstractMatrix{T}, Gσ″_00::AbstractMatrix{T},
-                      σ′::Int, σ″::Int, sgn::T=one(T)) where {D, C<:Number, T<:Number}
+    bond_correlation!(
+        BB::AbstractArray{C,D},
+        b′::Bond{D}, b″::Bond{D}, unit_cell::UnitCell{D}, lattice::Lattice{D},
+        Gσ′_τ0::AbstractMatrix{T}, Gσ′_0τ::AbstractMatrix{T},
+        Gσ′_ττ::AbstractMatrix{T}, Gσ″_00::AbstractMatrix{T},
+        σ′::Int, σ″::Int, sgn::T=one(T)
+    ) where {D, C<:Number, T<:Number}
 
 Calculate the spin-resolved uneqaul-time bond-bond correlation function
 ```math
@@ -95,9 +109,13 @@ is the bond operator.
 - `σ″::Int`: The electron spin appearing in the ``\hat{B}_{\sigma'',\mathbf{i},(\mathbf{r}'',c,d)}`` bond operator.
 - `sgn::T=one(T)`: The sign of the weight appearing in a DQMC simulation.
 """
-function bond_correlation!(BB::AbstractArray{C,D}, b′::Bond{D}, b″::Bond{D}, unit_cell::UnitCell{D}, lattice::Lattice{D},
-                           Gσ′_τ0::AbstractMatrix{T}, Gσ′_0τ::AbstractMatrix{T}, Gσ′_ττ::AbstractMatrix{T}, Gσ″_00::AbstractMatrix{T},
-                           σ′::Int, σ″::Int, sgn::T=one(T)) where {D, C<:Number, T<:Number}
+function bond_correlation!(
+    BB::AbstractArray{C,D},
+    b′::Bond{D}, b″::Bond{D}, unit_cell::UnitCell{D}, lattice::Lattice{D},
+    Gσ′_τ0::AbstractMatrix{T}, Gσ′_0τ::AbstractMatrix{T},
+    Gσ′_ττ::AbstractMatrix{T}, Gσ″_00::AbstractMatrix{T},
+    σ′::Int, σ″::Int, sgn::T=one(T)
+) where {D, C<:Number, T<:Number}
 
     # b′ = r′ + (r_a - r_b)
     b, a = b′.orbitals

@@ -1,7 +1,10 @@
 @doc raw"""
-    greens!(G::AbstractArray{C,D}, a::Int, b::Int, 
-            unit_cell::UnitCell{D}, lattice::Lattice{D},
-            G_τ0::AbstractMatrix{T}, sgn::T=one(T)) where {D, C<:Number, T<:Number}
+    greens!(
+        G::AbstractArray{C,D},
+        a::Int, b::Int, unit_cell::UnitCell{D}, lattice::Lattice{D},
+        G_τ0::AbstractMatrix{T},
+        sgn::T=one(T)
+    ) where {D, C<:Number, T<:Number}
 
 Measure the unequal time Green's function averaged over translation symmetry
 ```math
@@ -20,9 +23,12 @@ with the result being added to `G`.
 - `G_τ0::AbstractMatrix{T}`: The matrix ``G(\tau,0).``
 - `sgn::T=one(T)`: The sign of the weight appearing in a DQMC simulation.
 """
-function greens!(G::AbstractArray{C,D}, a::Int, b::Int, 
-                 unit_cell::UnitCell{D}, lattice::Lattice{D},
-                 G_τ0::AbstractMatrix{T}, sgn::T=one(T)) where {D, C<:Number, T<:Number}
+function greens!(
+    G::AbstractArray{C,D},
+    a::Int, b::Int, unit_cell::UnitCell{D}, lattice::Lattice{D},
+    G_τ0::AbstractMatrix{T},
+    sgn::T=one(T)
+) where {D, C<:Number, T<:Number}
 
     # construct the relevant bond definition
     z = @SVector zeros(Int, D)
