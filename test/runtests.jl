@@ -172,6 +172,6 @@ using LatticeUtilities
 
         # measure current correlation function
         fill!(CC, 0)
-        current_correlation!(CC, bond_1, bond_1, t1, t1, unit_cell, lattice, Gτ0, G0τ, Gττ, G00, Gτ0, G0τ, Gττ, G00, 1.0)
+        current_correlation!(CC, bond_1, bond_1, t1, t1, t1, t1, unit_cell, lattice, Gτ0, G0τ, Gττ, G00, Gτ0, G0τ, Gττ, G00, 1.0)
     end
 end
