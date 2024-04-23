@@ -1,6 +1,7 @@
 module JDQMCMeasurements
 
 using LinearAlgebra
+using Statistics
 using FFTW
 using StaticArrays
 using LatticeUtilities
@@ -49,5 +50,9 @@ export bond_correlation!
 # implement current correlation function
 include("correlation_measurements/current_correlation.jl")
 export current_correlation!
+
+# implements the jackknife algorithm
+include("jackknife.jl")
+export jackknife
 
 end

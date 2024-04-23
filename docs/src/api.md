@@ -39,11 +39,13 @@ measure_Nsqrd
 - [`fourier_transform!`](@ref)
 - [`susceptibility!`](@ref)
 - [`susceptibility`](@ref)
+- [`jackknife`](@ref)
 
 ```@docs
 fourier_transform!
 susceptibility!
 susceptibility
+jackknife
 ```
 
 ## Developer API

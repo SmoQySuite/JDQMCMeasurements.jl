@@ -2,6 +2,7 @@ using JDQMCMeasurements
 using Test
 using LinearAlgebra
 using LatticeUtilities
+using Statistics
 
 @testset "JDQMCMeasurements.jl" begin
     
@@ -174,4 +175,13 @@ using LatticeUtilities
         fill!(CC, 0)
         current_correlation!(CC, bond_1, bond_1, t1, t1, t1, t1, unit_cell, lattice, Gτ0, G0τ, Gττ, G00, Gτ0, G0τ, Gττ, G00, 1.0)
     end
+
+    # run a simple test for jackknife verifying that is reproduces the mean and
+    # standard deviation of the mean correctly
+    r = rand(100)
+    r̄ = mean(r)
+    Δr = std(r)/sqrt(length(r))
+    r̄_jackknife, Δr_jackknife = jackknife(identity, r)
+    @test r̄ ≈ r̄_jackknife
+    @test Δr ≈ Δr_jackknife
 end
