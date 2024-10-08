@@ -6,7 +6,7 @@
         Gup_ττ::AbstractMatrix{T}, Gup_00::AbstractMatrix{T},
         Gdn_τ0::AbstractMatrix{T}, Gdn_0τ::AbstractMatrix{T},
         Gdn_ττ::AbstractMatrix{T}, Gdn_00::AbstractMatrix{T},
-        sgn::T=one(T)
+        sgn=one(C)
     ) where {D, C<:Complex, T<:Number}
 
 Calculate the unequal-time spin-spin correlation function in the ``\hat{z}`` direction, given by
@@ -45,7 +45,7 @@ where the spin-``\hat{z}`` operator is given by
 - `Gdn_0τ::AbstractMatrix{T}`: The matrix ``G_{\downarrow}(0,\tau).``
 - `Gdn_ττ::AbstractMatrix{T}`: The matrix ``G_{\downarrow}(\tau,\tau).``
 - `Gdn_00::AbstractMatrix{T}`: The matrix ``G_{\downarrow}(0,0).``
-- `sgn::T=one(T)`: The sign of the weight appearing in a DQMC simulation.
+- `sgn=one(C)`: The sign of the weight appearing in a DQMC simulation.
 """
 function spin_z_correlation!(
     SzSz::AbstractArray{C,D},
@@ -54,7 +54,7 @@ function spin_z_correlation!(
     Gup_ττ::AbstractMatrix{T}, Gup_00::AbstractMatrix{T},
     Gdn_τ0::AbstractMatrix{T}, Gdn_0τ::AbstractMatrix{T},
     Gdn_ττ::AbstractMatrix{T}, Gdn_00::AbstractMatrix{T},
-    sgn::T=one(T)
+    sgn=one(C)
 ) where {D, C<:Complex, T<:Number}
 
     # define zero unit cell displacement bonds for all combos of a and b orbitals

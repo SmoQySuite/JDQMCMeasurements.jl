@@ -3,7 +3,7 @@
         G::AbstractArray{C,D},
         a::Int, b::Int, unit_cell::UnitCell{D}, lattice::Lattice{D},
         G_τ0::AbstractMatrix{T},
-        sgn::T=one(T)
+        sgn=one(C)
     ) where {D, C<:Number, T<:Number}
 
 Measure the unequal time Green's function averaged over translation symmetry
@@ -21,13 +21,13 @@ with the result being added to `G`.
 - `unit_cell::UnitCell{D}`: Defines unit cell.
 - `lattice::Lattice{D}`: Specifies size of finite lattice.
 - `G_τ0::AbstractMatrix{T}`: The matrix ``G(\tau,0).``
-- `sgn::T=one(T)`: The sign of the weight appearing in a DQMC simulation.
+- `sgn=one(C)`: The sign of the weight appearing in a DQMC simulation.
 """
 function greens!(
     G::AbstractArray{C,D},
     a::Int, b::Int, unit_cell::UnitCell{D}, lattice::Lattice{D},
     G_τ0::AbstractMatrix{T},
-    sgn::T=one(T)
+    sgn=one(C)
 ) where {D, C<:Number, T<:Number}
 
     # construct the relevant bond definition

@@ -3,7 +3,7 @@
         SxSx::AbstractArray{C,D}, a::Int, b::Int, unit_cell::UnitCell{D}, lattice::Lattice{D},
         Gup_τ0::AbstractMatrix{T}, Gup_0τ::AbstractMatrix{T},
         Gdn_τ0::AbstractMatrix{T}, Gdn_0τ::AbstractMatrix{T},
-        sgn::T=one(T)
+        sgn=one(C)
     ) where {D, C<:Number, T<:Number}
 
 Calculate the unequal-time spin-spin correlation function in the ``\hat{x}`` direction, given by
@@ -36,14 +36,14 @@ where the spin-``\hat{x}`` operator is given by
 - `Gup_0τ::AbstractMatrix{T}`: The matrix ``G_{\uparrow}(0,\tau).``
 - `Gdn_τ0::AbstractMatrix{T}`: The matrix ``G_{\downarrow}(\tau,0).``
 - `Gdn_0τ::AbstractMatrix{T}`: The matrix ``G_{\downarrow}(0,\tau).``
-- `sgn::T=one(T)`: The sign of the weight appearing in a DQMC simulation.
+- `sgn=one(C)`: The sign of the weight appearing in a DQMC simulation.
 ```
 """
 function spin_x_correlation!(
     SxSx::AbstractArray{C,D}, a::Int, b::Int, unit_cell::UnitCell{D}, lattice::Lattice{D},
     Gup_τ0::AbstractMatrix{T}, Gup_0τ::AbstractMatrix{T},
     Gdn_τ0::AbstractMatrix{T}, Gdn_0τ::AbstractMatrix{T},
-    sgn::T=one(T)
+    sgn=one(C)
 ) where {D, C<:Number, T<:Number}
 
     # define zero unit cell displacement bonds for all combos of a and b orbitals

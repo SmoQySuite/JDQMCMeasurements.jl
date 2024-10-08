@@ -6,7 +6,7 @@
         Gup_ττ::AbstractMatrix{T}, Gup_00::AbstractMatrix{T},
         Gdn_τ0::AbstractMatrix{T}, Gdn_0τ::AbstractMatrix{T},
         Gdn_ττ::AbstractMatrix{T}, Gdn_00::AbstractMatrix{T},
-        sgn::T=one(T)
+        sgn=one(C)
     ) where {D, C<:Number, T<:Number}
 
 Calculate the unequal-time density-density (charge) correlation function
@@ -37,7 +37,7 @@ with the result being added to the array `DD`.
 - `Gdn_0τ::AbstractMatrix{T}`: The matrix ``G_{\downarrow}(0,\tau).``
 - `Gdn_ττ::AbstractMatrix{T}`: The matrix ``G_{\downarrow}(\tau,\tau).``
 - `Gdn_00::AbstractMatrix{T}`: The matrix ``G_{\downarrow}(0,0).``
-- `sgn::T=one(T)`: The sign of the weight appearing in a DQMC simulation.
+- `sgn=one(C)`: The sign of the weight appearing in a DQMC simulation.
 """
 function density_correlation!(
     DD::AbstractArray{C,D},
@@ -46,7 +46,7 @@ function density_correlation!(
     Gup_ττ::AbstractMatrix{T}, Gup_00::AbstractMatrix{T},
     Gdn_τ0::AbstractMatrix{T}, Gdn_0τ::AbstractMatrix{T},
     Gdn_ττ::AbstractMatrix{T}, Gdn_00::AbstractMatrix{T},
-    sgn::T=one(T)
+    sgn=one(C)
 ) where {D, C<:Number, T<:Number}
 
     # up-up density-density correlation
@@ -70,7 +70,7 @@ end
         a::Int, b::Int, unit_cell::UnitCell{D}, lattice::Lattice{D},
         Gσ_τ0::AbstractMatrix{T}, Gσ_0τ::AbstractMatrix{T},
         Gσ_ττ::AbstractMatrix{T}, Gσ′_00::AbstractMatrix{T},
-        σ::Int, σ′::Int, sgn::T=one(T)
+        σ::Int, σ′::Int, sgn=one(C)
     ) where {D, C<:Number, T<:Number}
 
 Calculate the spin-resolved unequal-time density correlation function
@@ -98,14 +98,14 @@ with the result being added to the array `DD`.
 - `Gσ′_00::AbstractMatrix{T}`: The matrix ``G_{\sigma'}(0,0).``
 - `σ::Int`: The electron spin appearing in the ``\langle \hat{n} \rangle_{\sigma,a,\mathbf{i}+\mathbf{r}}`` density operator.
 - `σ′::Int`: The electron spin appearing in the ``\langle \hat{n} \rangle_{\sigma',b,\mathbf{i}}`` density operator.
-- `sgn::T=one(T)`: The sign of the weight appearing in a DQMC simulation.
+- `sgn=one(C)`: The sign of the weight appearing in a DQMC simulation.
 """
 function density_correlation!(
     DD::AbstractArray{C,D},
     a::Int, b::Int, unit_cell::UnitCell{D}, lattice::Lattice{D},
     Gσ_τ0::AbstractMatrix{T}, Gσ_0τ::AbstractMatrix{T},
     Gσ_ττ::AbstractMatrix{T}, Gσ′_00::AbstractMatrix{T},
-    σ::Int, σ′::Int, sgn::T=one(T)
+    σ::Int, σ′::Int, sgn=one(C)
 ) where {D, C<:Number, T<:Number}
 
     # define zero unit cell displacement bonds for all combos of a and b orbitals

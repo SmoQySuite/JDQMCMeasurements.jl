@@ -3,7 +3,7 @@
         P::AbstractArray{C,D},
         b″::Bond{D}, b′::Bond{D}, unit_cell::UnitCell{D}, lattice::Lattice{D},
         Gup_τ0::AbstractMatrix{T}, Gdn_τ0::AbstractMatrix{T},
-        sgn::T=one(T)
+        sgn=one(C)
     ) where {D, C<:Number, T<:Number}
 
 Calculate the unequal-time pair correlation function
@@ -29,13 +29,13 @@ and the bond  `b′` defines the pair creation operator
 - `lattice::Lattice{D}`: Specifies size of finite lattice.
 - `Gup_τ0::AbstractMatrix{T}`: The matrix ``G_{\uparrow}(\tau,0).``
 - `Gdn_τ0::AbstractMatrix{T}`: The matrix ``G_{\downarrow}(\tau,0).``
-- `sgn::T=one(T)`: The sign of the weight appearing in a DQMC simulation.
+- `sgn=one(C)`: The sign of the weight appearing in a DQMC simulation.
 """
 function pair_correlation!(
     P::AbstractArray{C,D},
     b″::Bond{D}, b′::Bond{D}, unit_cell::UnitCell{D}, lattice::Lattice{D},
     Gup_τ0::AbstractMatrix{T}, Gdn_τ0::AbstractMatrix{T},
-    sgn::T=one(T)
+    sgn=one(C)
 ) where {D, C<:Number, T<:Number}
 
     # P(τ,r) = G₊(a,i+r+r″,τ|c,i+r′,0)⋅G₋(b,i+r,τ|d,i,0)

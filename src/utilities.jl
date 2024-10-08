@@ -2,7 +2,7 @@
     average_Gr0(
         G::AbstractMatrix{T},
         r::Bond{D}, unit_cell::UnitCell{D,E}, lattice::Lattice{D},
-        sgn::T=one(T)
+        sgn=one(C)
     ) where {D, T<:Number, E<:AbstractFloat}
 
 Calculate the translationally averaged Green's function
@@ -14,7 +14,7 @@ defined by the bond `r`, which corresponds to the displacement ``\mathbf{r} + (\
 function average_Gr0(
     G::AbstractMatrix{T},
     r::Bond{D}, unit_cell::UnitCell{D,E}, lattice::Lattice{D},
-    sgn::T=one(T)
+    sgn=one(C)
 ) where {D, T<:Number, E<:AbstractFloat}
 
     Gr0 = zero(T)
@@ -56,7 +56,7 @@ end
     average_ηGr0(
         G::AbstractMatrix{T}, η::AbstractArray{T,D},
         r::Bond{D}, unit_cell::UnitCell{D,E}, lattice::Lattice{D},
-        sgn::T=one(T)
+        sgn=one(C)
     ) where {D, T<:Number, E<:AbstractFloat}
 
 Calculate and return the sum
@@ -68,7 +68,7 @@ where the bond `r` defines the displacement ``\mathbf{r} + (\mathbf{u}_a-\mathbf
 function average_ηGr0(
     G::AbstractMatrix{T}, η::AbstractArray{T,D},
     r::Bond{D}, unit_cell::UnitCell{D,E}, lattice::Lattice{D},
-    sgn::T=one(T)
+    sgn=one(C)
 ) where {D, T<:Number, E<:AbstractFloat}
 
     Gr0 = zero(T)
@@ -112,7 +112,7 @@ end
         S::AbstractArray{C}, G::AbstractMatrix{T},
         a::Int, b::Int, α::Int,
         unit_cell::UnitCell{D,E}, lattice::Lattice{D},
-        sgn::T=one(T)
+        sgn=one(C)
     ) where {D, C<:Complex, T<:Number, E<:AbstractFloat}
 
 Evaluate the sum
@@ -127,7 +127,7 @@ function contract_G00!(
     S::AbstractArray{C}, G::AbstractMatrix{T},
     a::Int, b::Int, α::Int,
     unit_cell::UnitCell{D,E}, lattice::Lattice{D},
-    sgn::T=one(T)
+    sgn=one(C)
 ) where {D, C<:Complex, T<:Number, E<:AbstractFloat}
     
     # number of unit cells
@@ -153,7 +153,7 @@ end
         S::AbstractArray{C,D}, G::AbstractMatrix{T},
         r′::Bond{D}, α::Int,
         unit_cell::UnitCell{D,E}, lattice::Lattice{D},
-        sgn::T=one(T)
+        sgn=one(C)
     ) where {D, C<:Complex, T<:Number, E<:AbstractFloat}
 
 Evaluate the sum
@@ -166,7 +166,7 @@ function contract_Gr0!(
     S::AbstractArray{C,D}, G::AbstractMatrix{T},
     r′::Bond{D}, α::Int,
     unit_cell::UnitCell{D,E}, lattice::Lattice{D},
-    sgn::T=one(T)
+    sgn=one(C)
 ) where {D, C<:Complex, T<:Number, E<:AbstractFloat}
 
     # get bond definition
@@ -207,7 +207,7 @@ end
         S::AbstractArray{C,D}, G::AbstractMatrix{T},
         η::AbstractArray{T}, r′::Bond{D}, α::Int,
         unit_cell::UnitCell{D,E}, lattice::Lattice{D},
-        sgn::T=one(T)
+        sgn=one(C)
     ) where {D, C<:Complex, T<:Number, E<:AbstractFloat}
 
 Evaluate the sum
@@ -220,7 +220,7 @@ function contract_Gr0!(
     S::AbstractArray{C,D}, G::AbstractMatrix{T},
     η::AbstractArray{T}, r′::Bond{D}, α::Int,
     unit_cell::UnitCell{D,E}, lattice::Lattice{D},
-    sgn::T=one(T)
+    sgn=one(C)
 ) where {D, C<:Complex, T<:Number, E<:AbstractFloat}
 
     # get bond definition
@@ -262,7 +262,7 @@ end
         S::AbstractArray{C,D}, G₂::AbstractMatrix{T}, G₁::AbstractMatrix{T},
         b₂::Bond{D}, b₁::Bond{D},
         α::Int, unit_cell::UnitCell{D,E}, lattice::Lattice{D},
-        sgn::T=one(T)
+        sgn=one(C)
     ) where {D, C<:Complex, T<:Number, E<:AbstractFloat}
 
 Evaluate the sum
@@ -276,7 +276,7 @@ function contract_Grr_G00!(
     S::AbstractArray{C,D}, G₂::AbstractMatrix{T}, G₁::AbstractMatrix{T},
     b₂::Bond{D}, b₁::Bond{D},
     α::Int, unit_cell::UnitCell{D,E}, lattice::Lattice{D},
-    sgn::T=one(T)
+    sgn=one(C)
 ) where {D, C<:Complex, T<:Number, E<:AbstractFloat}
 
     b, a = b₂.orbitals
@@ -325,12 +325,12 @@ end
         S::AbstractArray{C,D}, G₂::AbstractMatrix{T}, G₁::AbstractMatrix{T},
         η₂::AbstractArray{T}, η₁::AbstractArray{T}, b₂::Bond{D}, b₁::Bond{D},
         α::Int, unit_cell::UnitCell{D,E}, lattice::Lattice{D},
-        sgn::T=one(T)
+        sgn=one(C)
     ) where {D, C<:Complex, T<:Number, E<:AbstractFloat}
 
 Evaluate the sum
 ```math
-S_{\mathbf{r}}:=S_{\mathbf{r}}+\frac{\alpha}{N}\sum_{\mathbf{i}} \eta_2{\mathbf{i}+\mathbf{r}}\eta_1{\mathbf{i}} G_{\sigma_{2},\mathbf{i}+\mathbf{r}+\mathbf{r}_{2},\mathbf{i}+\mathbf{r}}^{a,b}(\tau_{2},0)\cdot G_{\sigma_{1},\mathbf{i}+\mathbf{r}_{1},\mathbf{i}}^{c,d}(\tau_{1},0)
+S_{\mathbf{r}}:=S_{\mathbf{r}}+\frac{\alpha}{N}\sum_{\mathbf{i}} \eta_{2,\mathbf{i}+\mathbf{r}}\eta_{1,\mathbf{i}} G_{\sigma_{2},\mathbf{i}+\mathbf{r}+\mathbf{r}_{2},\mathbf{i}+\mathbf{r}}^{a,b}(\tau_{2},0)\cdot G_{\sigma_{1},\mathbf{i}+\mathbf{r}_{1},\mathbf{i}}^{c,d}(\tau_{1},0)
 ```
 for all ``\mathbf{r},`` where the bond `b₂` represents the static displacement ``\mathbf{r}_2 + (\mathbf{r}_a - \mathbf{r}_b),``
 and the bond `b₁` represents the static displacement ``\mathbf{r}_1 + (\mathbf{r}_c - \mathbf{r}_d).``
@@ -339,7 +339,7 @@ function contract_Grr_G00!(
     S::AbstractArray{C,D}, G₂::AbstractMatrix{T}, G₁::AbstractMatrix{T},
     η₂::AbstractArray{T}, η₁::AbstractArray{T}, b₂::Bond{D}, b₁::Bond{D},
     α::Int, unit_cell::UnitCell{D,E}, lattice::Lattice{D},
-    sgn::T=one(T)
+    sgn=one(C)
 ) where {D, C<:Complex, T<:Number, E<:AbstractFloat}
 
     b, a = b₂.orbitals
@@ -389,7 +389,7 @@ end
         a::Int, b::Int, c::Int, d::Int,
         r₄::AbstractVector{Int}, r₃::AbstractVector{Int}, r₂::AbstractVector{Int}, r₁::AbstractVector{Int},
         α::Int, unit_cell::UnitCell{D,E}, lattice::Lattice{D},
-        sgn::T=one(T)
+        sgn=one(C)
     ) where {D, C<:Complex, T<:Number, E<:AbstractFloat}
 
 Evaluate the sum
@@ -403,7 +403,7 @@ function contract_Grr_G00!(
     a::Int, b::Int, c::Int, d::Int,
     r₄::AbstractVector{Int}, r₃::AbstractVector{Int}, r₂::AbstractVector{Int}, r₁::AbstractVector{Int},
     α::Int, unit_cell::UnitCell{D,E}, lattice::Lattice{D},
-    sgn::T=one(T)
+    sgn=one(C)
 ) where {D, C<:Complex, T<:Number, E<:AbstractFloat}
 
     # number of unit cells
@@ -452,12 +452,12 @@ end
         η₂::AbstractArray{T}, η₁::AbstractArray{T}, a::Int, b::Int, c::Int, d::Int,
         r₄::AbstractVector{Int}, r₃::AbstractVector{Int}, r₂::AbstractVector{Int}, r₁::AbstractVector{Int},
         α::Int, unit_cell::UnitCell{D,E}, lattice::Lattice{D},
-        sgn::T=one(T)
+        sgn=one(C)
     ) where {D, C<:Complex, T<:Number, E<:AbstractFloat}
 
 Evaluate the sum
 ```math
-S_{\mathbf{r}}:=S_{\mathbf{r}}+\frac{\alpha}{N}\sum_{\mathbf{i}} \eta_2{\mathbf{i}+\mathbf{r}}\eta_1{\mathbf{i}} G_{\sigma_{2},\mathbf{i}+\mathbf{r}+\mathbf{r}_{4},\mathbf{i}+\mathbf{r}+\mathbf{r}_{3}}^{a,b}(\tau_{2},0)\cdot G_{\sigma_{1},\mathbf{i}+\mathbf{r}_{2},\mathbf{i}+\mathbf{r}_{1}}^{c,d}(\tau_{1},0)
+S_{\mathbf{r}}:=S_{\mathbf{r}}+\frac{\alpha}{N}\sum_{\mathbf{i}} \eta_{2,\mathbf{i}+\mathbf{r}}\eta_{1,\mathbf{i}} G_{\sigma_{2},\mathbf{i}+\mathbf{r}+\mathbf{r}_{4},\mathbf{i}+\mathbf{r}+\mathbf{r}_{3}}^{a,b}(\tau_{2},0)\cdot G_{\sigma_{1},\mathbf{i}+\mathbf{r}_{2},\mathbf{i}+\mathbf{r}_{1}}^{c,d}(\tau_{1},0)
 ```
 for all ``\mathbf{r}.``
 """
@@ -466,7 +466,7 @@ function contract_Grr_G00!(
     η₂::AbstractArray{T}, η₁::AbstractArray{T}, a::Int, b::Int, c::Int, d::Int,
     r₄::AbstractVector{Int}, r₃::AbstractVector{Int}, r₂::AbstractVector{Int}, r₁::AbstractVector{Int},
     α::Int, unit_cell::UnitCell{D,E}, lattice::Lattice{D},
-    sgn::T=one(T)
+    sgn=one(C)
 ) where {D, C<:Complex, T<:Number, E<:AbstractFloat}
 
     # number of unit cells
@@ -516,7 +516,7 @@ end
     contract_Gr0_Gr0!(
         S::AbstractArray{C,D}, G₂::AbstractMatrix{T}, G₁::AbstractMatrix{T}, b₂::Bond, b₁::Bond,
         α::Int, unit_cell::UnitCell{D,E}, lattice::Lattice{D},
-        sgn::T=one(T)
+        sgn=one(C)
     ) where {D, C<:Complex, T<:Number, E<:AbstractFloat}
 
 Evaluate the sum
@@ -529,7 +529,7 @@ and the bond `b₁` represents the static displacement ``\mathbf{r}_1 + (\mathbf
 function contract_Gr0_Gr0!(
     S::AbstractArray{C,D}, G₂::AbstractMatrix{T}, G₁::AbstractMatrix{T}, b₂::Bond, b₁::Bond,
     α::Int, unit_cell::UnitCell{D,E}, lattice::Lattice{D},
-    sgn::T=one(T)
+    sgn=one(C)
 ) where {D, C<:Complex, T<:Number, E<:AbstractFloat}
 
     b, a = b₂.orbitals
@@ -578,12 +578,12 @@ end
         S::AbstractArray{C,D}, G₂::AbstractMatrix{T}, G₁::AbstractMatrix{T},
         η₂::AbstractArray{T}, η₁::AbstractArray{T}, b₂::Bond, b₁::Bond,
         α::Int, unit_cell::UnitCell{D,E}, lattice::Lattice{D},
-        sgn::T=one(T)
+        sgn=one(C)
     ) where {D, C<:Complex, T<:Number, E<:AbstractFloat}
 
 Evaluate the sum
 ```math
-S_{\mathbf{r}}:=S_{\mathbf{r}}+\frac{\alpha}{N}\sum_{\mathbf{i}} \eta_2(\mathbf{i}+\mathbf{r})\eta_1(\mathbf{i}) G_{\sigma_{2},\mathbf{i}+\mathbf{r}+\mathbf{r}_{2},\mathbf{i}+\mathbf{r}_{1}}^{a,c}(\tau_{2},0)\cdot G_{\sigma_{1},\mathbf{i}+\mathbf{r},\mathbf{i}}^{b,d}(\tau_{1},0)
+S_{\mathbf{r}}:=S_{\mathbf{r}}+\frac{\alpha}{N}\sum_{\mathbf{i}} \eta_{2,\mathbf{i}+\mathbf{r}}\eta_{1,\mathbf{i}} G_{\sigma_{2},\mathbf{i}+\mathbf{r}+\mathbf{r}_{2},\mathbf{i}+\mathbf{r}_{1}}^{a,c}(\tau_{2},0)\cdot G_{\sigma_{1},\mathbf{i}+\mathbf{r},\mathbf{i}}^{b,d}(\tau_{1},0)
 ```
 for all ``\mathbf{r},`` where the bond `b₂` represents the static displacement ``\mathbf{r}_2 + (\mathbf{r}_a - \mathbf{r}_b),``
 and the bond `b₁` represents the static displacement ``\mathbf{r}_1 + (\mathbf{r}_c - \mathbf{r}_d).``
@@ -592,7 +592,7 @@ function contract_Gr0_Gr0!(
     S::AbstractArray{C,D}, G₂::AbstractMatrix{T}, G₁::AbstractMatrix{T},
     η₂::AbstractArray{T}, η₁::AbstractArray{T}, b₂::Bond, b₁::Bond,
     α::Int, unit_cell::UnitCell{D,E}, lattice::Lattice{D},
-    sgn::T=one(T)
+    sgn=one(C)
 ) where {D, C<:Complex, T<:Number, E<:AbstractFloat}
 
     b, a = b₂.orbitals
@@ -642,7 +642,7 @@ end
         a::Int, b::Int, c::Int, d::Int,
         r₄::AbstractVector{Int}, r₃::AbstractVector{Int}, r₂::AbstractVector{Int}, r₁::AbstractVector{Int},
         α::Int, unit_cell::UnitCell{D,E}, lattice::Lattice{D},
-        sgn::T=one(T)
+        sgn=one(C)
     ) where {D, C<:Complex, T<:Number, E<:AbstractFloat}
 
 Evaluate the sum
@@ -656,7 +656,7 @@ function contract_Gr0_Gr0!(
     a::Int, b::Int, c::Int, d::Int,
     r₄::AbstractVector{Int}, r₃::AbstractVector{Int}, r₂::AbstractVector{Int}, r₁::AbstractVector{Int},
     α::Int, unit_cell::UnitCell{D,E}, lattice::Lattice{D},
-    sgn::T=one(T)
+    sgn=one(C)
 ) where {D, C<:Complex, T<:Number, E<:AbstractFloat}
 
     # number of unit cells
@@ -705,12 +705,12 @@ end
         η₂::AbstractArray{T}, η₁::AbstractArray{T}, a::Int, b::Int, c::Int, d::Int,
         r₄::AbstractVector{Int}, r₃::AbstractVector{Int}, r₂::AbstractVector{Int}, r₁::AbstractVector{Int},
         α::Int, unit_cell::UnitCell{D,E}, lattice::Lattice{D},
-        sgn::T=one(T)
+        sgn=one(C)
     ) where {D, C<:Complex, T<:Number, E<:AbstractFloat}
 
 Evaluate the sum
 ```math
-S_{\mathbf{r}}:=S_{\mathbf{r}}+\frac{\alpha}{N}\sum_{\mathbf{i}} \eta_2(\mathbf{i}+\mathbf{r})\eta_1(\mathbf{i}) G_{\sigma_{2},\mathbf{i}+\mathbf{r}+\mathbf{r}_{4},\mathbf{i}+\mathbf{r}_{3}}^{a,b}(\tau_{2},0)\cdot G_{\sigma_{1},\mathbf{i}+\mathbf{r}+\mathbf{r}_{2},\mathbf{i}+\mathbf{r}_{1}}^{c,d}(\tau_{1},0)
+S_{\mathbf{r}}:=S_{\mathbf{r}}+\frac{\alpha}{N}\sum_{\mathbf{i}} \eta_{2,\mathbf{i}+\mathbf{r}}\eta_{1,\mathbf{i}} G_{\sigma_{2},\mathbf{i}+\mathbf{r}+\mathbf{r}_{4},\mathbf{i}+\mathbf{r}_{3}}^{a,b}(\tau_{2},0)\cdot G_{\sigma_{1},\mathbf{i}+\mathbf{r}+\mathbf{r}_{2},\mathbf{i}+\mathbf{r}_{1}}^{c,d}(\tau_{1},0)
 ```
 for all ``\mathbf{r}.``
 """
@@ -719,7 +719,7 @@ function contract_Gr0_Gr0!(
     η₂::AbstractArray{T}, η₁::AbstractArray{T}, a::Int, b::Int, c::Int, d::Int,
     r₄::AbstractVector{Int}, r₃::AbstractVector{Int}, r₂::AbstractVector{Int}, r₁::AbstractVector{Int},
     α::Int, unit_cell::UnitCell{D,E}, lattice::Lattice{D},
-    sgn::T=one(T)
+    sgn=one(C)
 ) where {D, C<:Complex, T<:Number, E<:AbstractFloat}
 
     # number of unit cells
@@ -769,7 +769,7 @@ end
     contract_G0r_Gr0!(
         S::AbstractArray{C,D}, G₂::AbstractMatrix{T}, G₁::AbstractMatrix{T},
         b₂::Bond, b₁::Bond, α::Int, unit_cell::UnitCell{D,E}, lattice::Lattice{D},
-        sgn::T=one(T)
+        sgn=one(C)
     ) where {D, C<:Complex, T<:Number, E<:AbstractFloat}
 
 Evaluate the sum
@@ -782,7 +782,7 @@ and the bond `b₁` represents the static displacement ``\mathbf{r}_1 + (\mathbf
 function contract_G0r_Gr0!(
     S::AbstractArray{C,D}, G₂::AbstractMatrix{T}, G₁::AbstractMatrix{T},
     b₂::Bond, b₁::Bond, α::Int, unit_cell::UnitCell{D,E}, lattice::Lattice{D},
-    sgn::T=one(T)
+    sgn=one(C)
 ) where {D, C<:Complex, T<:Number, E<:AbstractFloat}
 
     b, a = b₂.orbitals
@@ -831,12 +831,12 @@ end
         S::AbstractArray{C,D}, G₂::AbstractMatrix{T}, G₁::AbstractMatrix{T},
         η₂::AbstractArray{T}, η₁::AbstractArray{T}, b₂::Bond, b₁::Bond,
         α::Int, unit_cell::UnitCell{D,E}, lattice::Lattice{D},
-        sgn::T=one(T)
+        sgn=one(C)
     ) where {D, C<:Complex, T<:Number, E<:AbstractFloat}
 
 Evaluate the sum
 ```math
-S_{\mathbf{r}}:=S_{\mathbf{r}}+\frac{\alpha}{N}\sum_{\mathbf{i}} \eta_2(\mathbf{i}+\mathbf{r})\eta_1(\mathbf{i}) G_{\sigma_{2},\mathbf{i}+\mathbf{r}_{2},\mathbf{i}+\mathbf{r}}^{a,b}(\tau_{2},0)\cdot G_{\sigma_{1},\mathbf{i}+\mathbf{r}+\mathbf{r}_{1},\mathbf{i}}^{c,d}(\tau_{1},0)
+S_{\mathbf{r}}:=S_{\mathbf{r}}+\frac{\alpha}{N}\sum_{\mathbf{i}} \eta_{2,\mathbf{i}+\mathbf{r}}\eta_{1,\mathbf{i}} G_{\sigma_{2},\mathbf{i}+\mathbf{r}_{2},\mathbf{i}+\mathbf{r}}^{a,b}(\tau_{2},0)\cdot G_{\sigma_{1},\mathbf{i}+\mathbf{r}+\mathbf{r}_{1},\mathbf{i}}^{c,d}(\tau_{1},0)
 ```
 for all ``\mathbf{r},`` where the bond `b₂` represents the static displacement ``\mathbf{r}_2 + (\mathbf{r}_a - \mathbf{r}_b),``
 and the bond `b₁` represents the static displacement ``\mathbf{r}_1 + (\mathbf{r}_c - \mathbf{r}_d).``
@@ -845,7 +845,7 @@ function contract_G0r_Gr0!(
     S::AbstractArray{C,D}, G₂::AbstractMatrix{T}, G₁::AbstractMatrix{T},
     η₂::AbstractArray{T}, η₁::AbstractArray{T}, b₂::Bond, b₁::Bond,
     α::Int, unit_cell::UnitCell{D,E}, lattice::Lattice{D},
-    sgn::T=one(T)
+    sgn=one(C)
 ) where {D, C<:Complex, T<:Number, E<:AbstractFloat}
 
     b, a = b₂.orbitals
@@ -895,7 +895,7 @@ end
         a::Int, b::Int, c::Int, d::Int,
         r₄::AbstractVector{Int}, r₃::AbstractVector{Int}, r₂::AbstractVector{Int}, r₁::AbstractVector{Int},
         α::Int, unit_cell::UnitCell{D,E}, lattice::Lattice{D},
-        sgn::T=one(T)
+        sgn=one(C)
     ) where {D, C<:Complex, T<:Number, E<:AbstractFloat}
 
 Evaluate the sum
@@ -909,7 +909,7 @@ function contract_G0r_Gr0!(
     a::Int, b::Int, c::Int, d::Int,
     r₄::AbstractVector{Int}, r₃::AbstractVector{Int}, r₂::AbstractVector{Int}, r₁::AbstractVector{Int},
     α::Int, unit_cell::UnitCell{D,E}, lattice::Lattice{D},
-    sgn::T=one(T)
+    sgn=one(C)
 ) where {D, C<:Complex, T<:Number, E<:AbstractFloat}
 
     # number of unit cells
@@ -958,12 +958,12 @@ end
         η₂::AbstractArray{T}, η₁::AbstractArray{T}, a::Int, b::Int, c::Int, d::Int,
         r₄::AbstractVector{Int}, r₃::AbstractVector{Int}, r₂::AbstractVector{Int}, r₁::AbstractVector{Int},
         α::Int, unit_cell::UnitCell{D,E}, lattice::Lattice{D},
-        sgn::T=one(T)
+        sgn=one(C)
     ) where {D, C<:Complex, T<:Number, E<:AbstractFloat}
 
 Evaluate the sum
 ```math
-S_{\mathbf{r}}:=S_{\mathbf{r}}+\frac{\alpha}{N}\sum_{\mathbf{i}} \eta_2(\mathbf{i}+\mathbf{r})\eta_1(\mathbf{i}) G_{\sigma_{2},\mathbf{i}+\mathbf{r}_{4},\mathbf{i}+\mathbf{r}+\mathbf{r}_{3}}^{a,b}(\tau_{2},0)\cdot G_{\sigma_{1},\mathbf{i}+\mathbf{r}+\mathbf{r}_{2},\mathbf{i}+\mathbf{r}_{1}}^{c,d}(\tau_{1},0)
+S_{\mathbf{r}}:=S_{\mathbf{r}}+\frac{\alpha}{N}\sum_{\mathbf{i}} \eta_{2,\mathbf{i}+\mathbf{r}{\eta_{1,\mathbf{i}} G_{\sigma_{2},\mathbf{i}+\mathbf{r}_{4},\mathbf{i}+\mathbf{r}+\mathbf{r}_{3}}^{a,b}(\tau_{2},0)\cdot G_{\sigma_{1},\mathbf{i}+\mathbf{r}+\mathbf{r}_{2},\mathbf{i}+\mathbf{r}_{1}}^{c,d}(\tau_{1},0)
 ```
 for all ``\mathbf{r}.``
 """
@@ -972,7 +972,7 @@ function contract_G0r_Gr0!(
     η₂::AbstractArray{T}, η₁::AbstractArray{T}, a::Int, b::Int, c::Int, d::Int,
     r₄::AbstractVector{Int}, r₃::AbstractVector{Int}, r₂::AbstractVector{Int}, r₁::AbstractVector{Int},
     α::Int, unit_cell::UnitCell{D,E}, lattice::Lattice{D},
-    sgn::T=one(T)
+    sgn=one(C)
 ) where {D, C<:Complex, T<:Number, E<:AbstractFloat}
 
     # number of unit cells
