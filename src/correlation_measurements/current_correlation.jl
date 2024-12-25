@@ -156,16 +156,16 @@ function current_correlation!(
     if σ′ == σ″
 
         # CC(τ,r) = CC(τ,r) + sum_i tσ′(a,i+r|b,i)⋅tσ″(c,i+r″|d,i)⋅Gσ′(c,i+r″,0|b,i+r,τ)⋅Gσ″(a,i+r+r′,τ|d,i,0)
-        contract_G0r_Gr0!(CC, Gσ′_0τ, Gσ′_τ0, c, b, a, d, r″, z, r′, z, +1, unit_cell, lattice, sgn)
+        contract_G0r_Gr0!(CC, Gσ′_0τ, Gσ′_τ0, t′, t″, c, b, a, d, r″, z, r′, z, +1, unit_cell, lattice, sgn)
 
         # CC(τ,r) = CC(τ,r) - sum_i tσ′(a,i+r|b,i)⋅tσ″(c,i+r″|d,i)⋅Gσ′(d,i,0|b,i+r,τ)⋅Gσ″(a,i+r+r′,τ|c,i+r″,0)
-        contract_G0r_Gr0!(CC, Gσ′_0τ, Gσ′_τ0, d, b, a, c, z, z, r′, r″, -1, unit_cell, lattice, sgn)
+        contract_G0r_Gr0!(CC, Gσ′_0τ, Gσ′_τ0, t′, t″, d, b, a, c, z, z, r′, r″, -1, unit_cell, lattice, sgn)
 
         # CC(τ,r) = CC(τ,r) - sum_i tσ′(a,i+r|b,i)⋅tσ″(c,i+r″|d,i)⋅Gσ′(c,i+r″,0|a,i+r+r′,τ)⋅Gσ″(b,i+r,τ|d,i,0)
-        contract_G0r_Gr0!(CC, Gσ′_0τ, Gσ′_τ0, c, a, b, d, r″, r′, z, z, -1, unit_cell, lattice, sgn)
+        contract_G0r_Gr0!(CC, Gσ′_0τ, Gσ′_τ0, t′, t″, c, a, b, d, r″, r′, z, z, -1, unit_cell, lattice, sgn)
 
         # CC(τ,r) = CC(τ,r) + sum_i tσ′(a,i+r|b,i)⋅tσ″(c,i+r″|d,i)⋅Gσ′(d,i,0|a,i+r+r′,τ)⋅Gσ″(b,i+r,τ|c,i+r″,0)
-        contract_G0r_Gr0!(CC, Gσ′_0τ, Gσ′_τ0, d, a, b, c, z, r′, z, r″, +1, unit_cell, lattice, sgn)
+        contract_G0r_Gr0!(CC, Gσ′_0τ, Gσ′_τ0, t′, t″, d, a, b, c, z, r′, z, r″, +1, unit_cell, lattice, sgn)
     end
 
     return nothing
