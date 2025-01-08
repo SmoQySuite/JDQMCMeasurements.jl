@@ -18,13 +18,14 @@ Calculate the uneqaul-time current-current correlation function
     \langle[\hat{J}_{\uparrow,\mathbf{i}+\mathbf{r},(\mathbf{r}',a,b)}(\tau)+\hat{J}_{\downarrow,\mathbf{i}+\mathbf{r},(\mathbf{r}',a,b)}(\tau)]
     \cdot[\hat{J}_{\uparrow,\mathbf{i},(\mathbf{r}'',c,d)}(0)+\hat{J}_{\downarrow,\mathbf{i},(\mathbf{r}'',c,d)}(0)]\rangle,
 ```
-where the current operator is given by
+where the spin-resolved current operator is given by
 ```math
 \begin{align*}
-\hat{J}_{\sigma,\mathbf{i},(\mathbf{r},a,b)}= & -{\rm i}t_{\mathbf{i}+\mathbf{r},\mathbf{i}}^{a,b}(\hat{a}_{\sigma,\mathbf{i}+\mathbf{r}}^{\dagger}\hat{b}_{\sigma,\mathbf{i}}-\hat{b}_{\sigma,\mathbf{i}}^{\dagger}\hat{a}_{\sigma,\mathbf{i}+\mathbf{r}})\\
-= & -{\rm i}t_{\mathbf{i}+\mathbf{r},\mathbf{i}}^{a,b}(\hat{a}_{\sigma,\mathbf{i}+\mathbf{r}}\hat{b}_{\sigma,\mathbf{i}}^{\dagger}-\hat{b}_{\sigma,\mathbf{i}}\hat{a}_{\sigma,\mathbf{i}+\mathbf{r}}^{\dagger}).
+    \hat{J}_{\sigma,\mathbf{i},(\mathbf{r},a,b)}
+        & = -{\rm i}(t_{\sigma,\mathbf{i}+\mathbf{r},\mathbf{i}}^{a,b} \hat{a}_{\sigma,\mathbf{i}+\mathbf{r}}^{\dagger}\hat{b}_{\sigma,\mathbf{i}} - t_{\sigma,\mathbf{i}, \mathbf{i}+\mathbf{r}}^{b,a} \hat{b}_{\sigma,\mathbf{i}}^{\dagger}\hat{a}_{\sigma,\mathbf{i}+\mathbf{r}})\\
 \end{align*}
 ```
+and ``t_{\sigma,\mathbf{i}, \mathbf{i}+\mathbf{r}}^{b,a} = \big( t_{\sigma,\mathbf{i}+\mathbf{r},\mathbf{i}}^{a,b} \big)^*``.
 
 # Fields
 
@@ -98,10 +99,10 @@ where the spin-resolved current operator is given by
 ```math
 \begin{align*}
     \hat{J}_{\sigma,\mathbf{i},(\mathbf{r},a,b)}
-        & = -{\rm i}t_{\sigma,\mathbf{i}+\mathbf{r},\mathbf{i}}^{a,b}(\hat{a}_{\sigma,\mathbf{i}+\mathbf{r}}^{\dagger}\hat{b}_{\sigma,\mathbf{i}}-\hat{b}_{\sigma,\mathbf{i}}^{\dagger}\hat{a}_{\sigma,\mathbf{i}+\mathbf{r}})\\
-        & = -{\rm i}t_{\sigma,\mathbf{i}+\mathbf{r},\mathbf{i}}^{a,b}(\hat{a}_{\sigma,\mathbf{i}+\mathbf{r}}\hat{b}_{\sigma,\mathbf{i}}^{\dagger}-\hat{b}_{\sigma,\mathbf{i}}\hat{a}_{\sigma,\mathbf{i}+\mathbf{r}}^{\dagger}).
+        & = -{\rm i}(t_{\sigma,\mathbf{i}+\mathbf{r},\mathbf{i}}^{a,b} \hat{a}_{\sigma,\mathbf{i}+\mathbf{r}}^{\dagger}\hat{b}_{\sigma,\mathbf{i}} - t_{\sigma,\mathbf{i}, \mathbf{i}+\mathbf{r}}^{b,a} \hat{b}_{\sigma,\mathbf{i}}^{\dagger}\hat{a}_{\sigma,\mathbf{i}+\mathbf{r}})\\
 \end{align*}
 ```
+and ``t_{\sigma,\mathbf{i}, \mathbf{i}+\mathbf{r}}^{b,a} = \big( t_{\sigma,\mathbf{i}+\mathbf{r},\mathbf{i}}^{a,b} \big)^*``.
 
 # Fields
 
@@ -140,32 +141,36 @@ function current_correlation!(
     # zero vector
     z = @SVector zeros(Int, D)
 
-    # CC(τ,r) = CC(τ,r) + sum_i tσ′(a,i+r|b,i)⋅tσ″(c,i+r″|d,i)⋅Gσ′(a,i+r+r′,τ|b,i+r,τ)⋅Gσ″(d,i,0|c,i+r″,0)
-    contract_Grr_G00!(CC, Gσ′_ττ, Gσ″_00, t′, t″, a, b, d, c, r′, z, z, r″, +1, unit_cell, lattice, sgn)
+    # Note:
+    # t′ = tσ′(a,i+r|b,i) and conj(t′) = tσ′(b,i|a,i+r)
+    # t″ = tσ″(c,i+r″|d,i) and conj(t″) = tσ″(d,i|c,i+r″)
 
-    # CC(τ,r) = CC(τ,r) - sum_i tσ′(a,i+r|b,i)⋅tσ″(c,i+r″|d,i)⋅Gσ′(a,i+r+r′,τ|b,i+r,τ)⋅Gσ″(c,i+r″,0|d,i,0)
-    contract_Grr_G00!(CC, Gσ′_ττ, Gσ″_00, t′, t″, a, b, c, d, r′, z, r″, z, -1, unit_cell, lattice, sgn)
+    # CC(τ,r) = CC(τ,r) + sum_i tσ′(b,i|a,i+r)⋅tσ″(c,i+r″|d,i)⋅Gσ′(a,i+r+r′,τ|b,i+r,τ)⋅Gσ″(d,i,0|c,i+r″,0)
+    contract_Grr_G00!(CC, Gσ′_ττ, Gσ″_00, t′, t″, a, b, d, c, r′, z, z, r″, +1, unit_cell, lattice, sgn, true, false)
 
-    # CC(τ,r) = CC(τ,r) + sum_i tσ′(a,i+r|b,i)⋅tσ″(c,i+r″|d,i)⋅Gσ′(b,i+r,τ|a,i+r+r′,τ)⋅Gσ″(c,i+r″,0|d,i,0)
-    contract_Grr_G00!(CC, Gσ′_ττ, Gσ″_00, t′, t″, b, a, c, d, z, r′, r″, z, +1, unit_cell, lattice, sgn)
+    # CC(τ,r) = CC(τ,r) - sum_i tσ′(b,i|a,i+r)⋅tσ″(d,i|c,i+r″)⋅Gσ′(a,i+r+r′,τ|b,i+r,τ)⋅Gσ″(c,i+r″,0|d,i,0)
+    contract_Grr_G00!(CC, Gσ′_ττ, Gσ″_00, t′, t″, a, b, c, d, r′, z, r″, z, -1, unit_cell, lattice, sgn, true, true)
+
+    # CC(τ,r) = CC(τ,r) + sum_i tσ′(a,i+r|b,i)⋅tσ″(d,i|c,i+r″)⋅Gσ′(b,i+r,τ|a,i+r+r′,τ)⋅Gσ″(c,i+r″,0|d,i,0)
+    contract_Grr_G00!(CC, Gσ′_ττ, Gσ″_00, t′, t″, b, a, c, d, z, r′, r″, z, +1, unit_cell, lattice, sgn, false, true)
 
     # CC(τ,r) = CC(τ,r) - sum_i tσ′(a,i+r|b,i)⋅tσ″(c,i+r″|d,i)⋅Gσ′(b,i+r,τ|a,i+r+r′,τ)⋅Gσ″(d,i,0|c,i+r″,0)
-    contract_Grr_G00!(CC, Gσ′_ττ, Gσ″_00, t′, t″, b, a, d, c, z, r′, z, r″, -1, unit_cell, lattice, sgn)
+    contract_Grr_G00!(CC, Gσ′_ττ, Gσ″_00, t′, t″, b, a, d, c, z, r′, z, r″, -1, unit_cell, lattice, sgn, false, false)
 
     # if current correlation between same spin species
     if σ′ == σ″
 
-        # CC(τ,r) = CC(τ,r) + sum_i tσ′(a,i+r|b,i)⋅tσ″(c,i+r″|d,i)⋅Gσ′(c,i+r″,0|b,i+r,τ)⋅Gσ″(a,i+r+r′,τ|d,i,0)
-        contract_G0r_Gr0!(CC, Gσ′_0τ, Gσ′_τ0, t′, t″, c, b, a, d, r″, z, r′, z, +1, unit_cell, lattice, sgn)
+        # CC(τ,r) = CC(τ,r) + sum_i tσ′(b,i|a,i+r)⋅tσ″(d,i|c,i+r″)⋅Gσ′(c,i+r″,0|b,i+r,τ)⋅Gσ″(a,i+r+r′,τ|d,i,0)
+        contract_G0r_Gr0!(CC, Gσ′_0τ, Gσ′_τ0, t′, t″, c, b, a, d, r″, z, r′, z, +1, unit_cell, lattice, sgn, true, true)
 
-        # CC(τ,r) = CC(τ,r) - sum_i tσ′(a,i+r|b,i)⋅tσ″(c,i+r″|d,i)⋅Gσ′(d,i,0|b,i+r,τ)⋅Gσ″(a,i+r+r′,τ|c,i+r″,0)
-        contract_G0r_Gr0!(CC, Gσ′_0τ, Gσ′_τ0, t′, t″, d, b, a, c, z, z, r′, r″, -1, unit_cell, lattice, sgn)
+        # CC(τ,r) = CC(τ,r) - sum_i tσ′(b,i|a,i+r)⋅tσ″(c,i+r″|d,i)⋅Gσ′(d,i,0|b,i+r,τ)⋅Gσ″(a,i+r+r′,τ|c,i+r″,0)
+        contract_G0r_Gr0!(CC, Gσ′_0τ, Gσ′_τ0, t′, t″, d, b, a, c, z, z, r′, r″, -1, unit_cell, lattice, sgn, true, false)
 
-        # CC(τ,r) = CC(τ,r) - sum_i tσ′(a,i+r|b,i)⋅tσ″(c,i+r″|d,i)⋅Gσ′(c,i+r″,0|a,i+r+r′,τ)⋅Gσ″(b,i+r,τ|d,i,0)
-        contract_G0r_Gr0!(CC, Gσ′_0τ, Gσ′_τ0, t′, t″, c, a, b, d, r″, r′, z, z, -1, unit_cell, lattice, sgn)
+        # CC(τ,r) = CC(τ,r) - sum_i tσ′(a,i+r|b,i)⋅tσ″(d,i|c,i+r″)⋅Gσ′(c,i+r″,0|a,i+r+r′,τ)⋅Gσ″(b,i+r,τ|d,i,0)
+        contract_G0r_Gr0!(CC, Gσ′_0τ, Gσ′_τ0, t′, t″, c, a, b, d, r″, r′, z, z, -1, unit_cell, lattice, sgn, false, true)
 
         # CC(τ,r) = CC(τ,r) + sum_i tσ′(a,i+r|b,i)⋅tσ″(c,i+r″|d,i)⋅Gσ′(d,i,0|a,i+r+r′,τ)⋅Gσ″(b,i+r,τ|c,i+r″,0)
-        contract_G0r_Gr0!(CC, Gσ′_0τ, Gσ′_τ0, t′, t″, d, a, b, c, z, r′, z, r″, +1, unit_cell, lattice, sgn)
+        contract_G0r_Gr0!(CC, Gσ′_0τ, Gσ′_τ0, t′, t″, d, a, b, c, z, r′, z, r″, +1, unit_cell, lattice, sgn, false, false)
     end
 
     return nothing

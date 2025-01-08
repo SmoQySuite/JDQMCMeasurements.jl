@@ -325,7 +325,7 @@ end
         S::AbstractArray{C,D}, G₂::AbstractMatrix{T}, G₁::AbstractMatrix{T},
         η₂::AbstractArray{T}, η₁::AbstractArray{T}, b₂::Bond{D}, b₁::Bond{D},
         α::Int, unit_cell::UnitCell{D,E}, lattice::Lattice{D},
-        sgn=one(C)
+        sgn=one(C), conj_η₂::Bool = false, conj_η₁::Bool = false
     ) where {D, C<:Complex, T<:Number, E<:AbstractFloat}
 
 Evaluate the sum
@@ -339,7 +339,7 @@ function contract_Grr_G00!(
     S::AbstractArray{C,D}, G₂::AbstractMatrix{T}, G₁::AbstractMatrix{T},
     η₂::AbstractArray{T}, η₁::AbstractArray{T}, b₂::Bond{D}, b₁::Bond{D},
     α::Int, unit_cell::UnitCell{D,E}, lattice::Lattice{D},
-    sgn=one(C)
+    sgn=one(C), conj_η₂::Bool = false, conj_η₁::Bool = false
 ) where {D, C<:Complex, T<:Number, E<:AbstractFloat}
 
     b, a = b₂.orbitals
@@ -376,7 +376,9 @@ function contract_Grr_G00!(
         # average over translation symmetry
         for n in CartesianIndices(S)
             # S(r) = S(r) + α/N sum_i η(i+r)⋅η(i)⋅G₂(a,i+r+r₂|b,i+r)⋅G₁(c,i+r₁|d,i)
-            S[r] += αN⁻¹ * η₂[ipr[n]] * η₁[i[n]] * G₂_ab[iprpr₂[n],ipr[n]] * G₁_cd[ipr₁[n],i[n]]
+            η₂_ipr = conj_η₂ ? conj(η₂[ipr[n]]) : η₂[ipr[n]]
+            η₁_i   = conj_η₁ ? conj(η₁[i[n]]) : η₁[i[n]]
+            S[r] += αN⁻¹ * η₂_ipr * η₁_i * G₂_ab[iprpr₂[n],ipr[n]] * G₁_cd[ipr₁[n],i[n]]
         end
     end
 
@@ -452,7 +454,7 @@ end
         η₂::AbstractArray{T}, η₁::AbstractArray{T}, a::Int, b::Int, c::Int, d::Int,
         r₄::AbstractVector{Int}, r₃::AbstractVector{Int}, r₂::AbstractVector{Int}, r₁::AbstractVector{Int},
         α::Int, unit_cell::UnitCell{D,E}, lattice::Lattice{D},
-        sgn=one(C)
+        sgn=one(C), conj_η₂::Bool = false, conj_η₁::Bool = false
     ) where {D, C<:Complex, T<:Number, E<:AbstractFloat}
 
 Evaluate the sum
@@ -466,7 +468,7 @@ function contract_Grr_G00!(
     η₂::AbstractArray{T}, η₁::AbstractArray{T}, a::Int, b::Int, c::Int, d::Int,
     r₄::AbstractVector{Int}, r₃::AbstractVector{Int}, r₂::AbstractVector{Int}, r₁::AbstractVector{Int},
     α::Int, unit_cell::UnitCell{D,E}, lattice::Lattice{D},
-    sgn=one(C)
+    sgn=one(C), conj_η₂::Bool = false, conj_η₁::Bool = false
 ) where {D, C<:Complex, T<:Number, E<:AbstractFloat}
 
     # number of unit cells
@@ -504,7 +506,9 @@ function contract_Grr_G00!(
         # average over translation symmetry
         for n in CartesianIndices(S)
             # S(r) = S(r) + α/N sum_i η₂(i+r)⋅η₁(i)⋅G₂(a,i+r+r₄|b,i+r+r₃)⋅G₁(c,i+r₂|d,i+r₁)
-            S[r] += αN⁻¹ * η₂[ipr[n]] * η₁[i[n]] * G₂_ab[iprpr₄[n],iprpr₃[n]] * G₁_cd[ipr₂[n],ipr₁[n]]
+            η₂_ipr = conj_η₂ ? conj(η₂[ipr[n]]) : η₂[ipr[n]]
+            η₁_i   = conj_η₁ ? conj(η₁[i[n]]) : η₁[i[n]]
+            S[r] += αN⁻¹ * η₂_ipr * η₁_i * G₂_ab[iprpr₄[n],iprpr₃[n]] * G₁_cd[ipr₂[n],ipr₁[n]]
         end
     end
 
@@ -578,7 +582,7 @@ end
         S::AbstractArray{C,D}, G₂::AbstractMatrix{T}, G₁::AbstractMatrix{T},
         η₂::AbstractArray{T}, η₁::AbstractArray{T}, b₂::Bond, b₁::Bond,
         α::Int, unit_cell::UnitCell{D,E}, lattice::Lattice{D},
-        sgn=one(C)
+        sgn=one(C), conj_η₂::Bool = false, conj_η₁::Bool = false
     ) where {D, C<:Complex, T<:Number, E<:AbstractFloat}
 
 Evaluate the sum
@@ -592,7 +596,7 @@ function contract_Gr0_Gr0!(
     S::AbstractArray{C,D}, G₂::AbstractMatrix{T}, G₁::AbstractMatrix{T},
     η₂::AbstractArray{T}, η₁::AbstractArray{T}, b₂::Bond, b₁::Bond,
     α::Int, unit_cell::UnitCell{D,E}, lattice::Lattice{D},
-    sgn=one(C)
+    sgn=one(C), conj_η₂::Bool = false, conj_η₁::Bool = false
 ) where {D, C<:Complex, T<:Number, E<:AbstractFloat}
 
     b, a = b₂.orbitals
@@ -629,7 +633,9 @@ function contract_Gr0_Gr0!(
         # average over translation symmetry
         for n in CartesianIndices(S)
             # S(r) = S(r) + α/N sum_i η₂(i+r)⋅η₁(i)⋅G₂(a,i+r+r₂|c,i+r₁)⋅G₁(b,i+r|d,i)
-            S[r] += αN⁻¹ * η₂[ipr[n]] * η₁[i[n]] * G₂_ac[iprpr₂[n],ipr₁[n]] * G₁_bd[ipr[n],i[n]]
+            η₂_ipr = conj_η₂ ? conj(η₂[ipr[n]]) : η₂[ipr[n]]
+            η₁_i   = conj_η₁ ? conj(η₁[i[n]]) : η₁[i[n]]
+            S[r] += αN⁻¹ * η₂_ipr * η₁_i * G₂_ac[iprpr₂[n],ipr₁[n]] * G₁_bd[ipr[n],i[n]]
         end
     end
 
@@ -705,7 +711,7 @@ end
         η₂::AbstractArray{T}, η₁::AbstractArray{T}, a::Int, b::Int, c::Int, d::Int,
         r₄::AbstractVector{Int}, r₃::AbstractVector{Int}, r₂::AbstractVector{Int}, r₁::AbstractVector{Int},
         α::Int, unit_cell::UnitCell{D,E}, lattice::Lattice{D},
-        sgn=one(C)
+        sgn=one(C), conj_η₂::Bool = false, conj_η₁::Bool = false
     ) where {D, C<:Complex, T<:Number, E<:AbstractFloat}
 
 Evaluate the sum
@@ -719,7 +725,7 @@ function contract_Gr0_Gr0!(
     η₂::AbstractArray{T}, η₁::AbstractArray{T}, a::Int, b::Int, c::Int, d::Int,
     r₄::AbstractVector{Int}, r₃::AbstractVector{Int}, r₂::AbstractVector{Int}, r₁::AbstractVector{Int},
     α::Int, unit_cell::UnitCell{D,E}, lattice::Lattice{D},
-    sgn=one(C)
+    sgn=one(C), conj_η₂::Bool = false, conj_η₁::Bool = false
 ) where {D, C<:Complex, T<:Number, E<:AbstractFloat}
 
     # number of unit cells
@@ -757,7 +763,9 @@ function contract_Gr0_Gr0!(
         # average over translation symmetry
         for n in CartesianIndices(S)
             # S(r) = S(r) + α/N sum_i η₂(i+r)⋅η₁(i)⋅G₂(a,i+r+r₄|b,i+r₃)⋅G₁(c,i+r+r₂|d,i+r₁)
-            S[r] += αN⁻¹ * η₂[ipr[n]] * η₁[i[n]] * G₂_ab[iprpr₄[n],ipr₃[n]] * G₁_cd[iprpr₂[n],ipr₁[n]]
+            η₂_ipr = conj_η₂ ? conj(η₂[ipr[n]]) : η₂[ipr[n]]
+            η₁_i   = conj_η₁ ? conj(η₁[i[n]]) : η₁[i[n]]
+            S[r] += αN⁻¹ * η₂_ipr * η₁_i * G₂_ab[iprpr₄[n],ipr₃[n]] * G₁_cd[iprpr₂[n],ipr₁[n]]
         end
     end
 
@@ -831,7 +839,7 @@ end
         S::AbstractArray{C,D}, G₂::AbstractMatrix{T}, G₁::AbstractMatrix{T},
         η₂::AbstractArray{T}, η₁::AbstractArray{T}, b₂::Bond, b₁::Bond,
         α::Int, unit_cell::UnitCell{D,E}, lattice::Lattice{D},
-        sgn=one(C)
+        sgn=one(C), conj_η₂::Bool = false, conj_η₁::Bool = false
     ) where {D, C<:Complex, T<:Number, E<:AbstractFloat}
 
 Evaluate the sum
@@ -845,7 +853,7 @@ function contract_G0r_Gr0!(
     S::AbstractArray{C,D}, G₂::AbstractMatrix{T}, G₁::AbstractMatrix{T},
     η₂::AbstractArray{T}, η₁::AbstractArray{T}, b₂::Bond, b₁::Bond,
     α::Int, unit_cell::UnitCell{D,E}, lattice::Lattice{D},
-    sgn=one(C)
+    sgn=one(C), conj_η₂::Bool = false, conj_η₁::Bool = false
 ) where {D, C<:Complex, T<:Number, E<:AbstractFloat}
 
     b, a = b₂.orbitals
@@ -882,7 +890,9 @@ function contract_G0r_Gr0!(
         # average over translation symmetry
         for n in CartesianIndices(S)
             # S(r) = S(r) + α/N sum_i η₂(i+r)⋅η₁(i)⋅G₂(a,i+r₂|b,i+r)⋅G₁(c,i+r+r₁|d,i)
-            S[r] += αN⁻¹ * η₂[ipr[n]] * η₁[i[n]] * G₂_ab[ipr₂[n],ipr[n]] * G₁_cd[iprpr₁[n],i[n]]
+            η₂_ipr = conj_η₂ ? conj(η₂[ipr[n]]) : η₂[ipr[n]]
+            η₁_i   = conj_η₁ ? conj(η₁[i[n]]) : η₁[i[n]]
+            S[r] += αN⁻¹ * η₂_ipr * η₁_i * G₂_ab[ipr₂[n],ipr[n]] * G₁_cd[iprpr₁[n],i[n]]
         end
     end
     
@@ -953,12 +963,12 @@ function contract_G0r_Gr0!(
 end
 
 @doc raw"""
-    contract_G0r_Gr0!(
+    function contract_G0r_Gr0!(
         S::AbstractArray{C,D}, G₂::AbstractMatrix{T}, G₁::AbstractMatrix{T},
         η₂::AbstractArray{T}, η₁::AbstractArray{T}, a::Int, b::Int, c::Int, d::Int,
         r₄::AbstractVector{Int}, r₃::AbstractVector{Int}, r₂::AbstractVector{Int}, r₁::AbstractVector{Int},
         α::Int, unit_cell::UnitCell{D,E}, lattice::Lattice{D},
-        sgn=one(C)
+        sgn=one(C), conj_η₂::Bool = false, conj_η₁::Bool = false
     ) where {D, C<:Complex, T<:Number, E<:AbstractFloat}
 
 Evaluate the sum
@@ -972,7 +982,7 @@ function contract_G0r_Gr0!(
     η₂::AbstractArray{T}, η₁::AbstractArray{T}, a::Int, b::Int, c::Int, d::Int,
     r₄::AbstractVector{Int}, r₃::AbstractVector{Int}, r₂::AbstractVector{Int}, r₁::AbstractVector{Int},
     α::Int, unit_cell::UnitCell{D,E}, lattice::Lattice{D},
-    sgn=one(C)
+    sgn=one(C), conj_η₂::Bool = false, conj_η₁::Bool = false
 ) where {D, C<:Complex, T<:Number, E<:AbstractFloat}
 
     # number of unit cells
@@ -1010,7 +1020,9 @@ function contract_G0r_Gr0!(
         # average over translation symmetry
         for n in CartesianIndices(S)
             # S(r) = S(r) + α/N sum_i η₂(i+r)⋅η₁(i)⋅G₂(a,i+r₄|b,i+r+r₃)⋅G₁(c,i+r+r₂|d,i+r₁)
-            S[r] += αN⁻¹ * η₂[ipr[n]] * η₁[i[n]] * G₂_ab[ipr₄[n],iprpr₃[n]] * G₁_cd[iprpr₂[n],ipr₁[n]]
+            η₂_ipr = conj_η₂ ? conj(η₂[ipr[n]]) : η₂[ipr[n]]
+            η₁_i   = conj_η₁ ? conj(η₁[i[n]]) : η₁[i[n]]
+            S[r] += αN⁻¹ * η₂_ipr * η₁_i * G₂_ab[ipr₄[n],iprpr₃[n]] * G₁_cd[iprpr₂[n],ipr₁[n]]
         end
     end
 
