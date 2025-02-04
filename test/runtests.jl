@@ -184,4 +184,88 @@ using Statistics
     r̄_jackknife, Δr_jackknife = jackknife(identity, r)
     @test r̄ ≈ r̄_jackknife
     @test Δr ≈ Δr_jackknife
+
+    # Run a test to make sure cubic spline transforming fermionic Correlation from
+    # imaginary-time to Matsubara frequency is working correctly
+    ϵ = 1.1
+    β = 5.4
+    Δτ = 0.1
+    Lτ = round(Int, β/Δτ)
+    τ = collect(range(start=0, stop=β, length=Lτ+1))
+    Gτ = @. inv(exp(τ*ϵ) + exp((τ-β)*ϵ))
+    Nωn = 4*Lτ
+    n = collect(-Nωn:(Nωn-1))
+    ωn = @. (2n+1)*π/β
+    Gωn = @. inv(ϵ - im*ωn)
+    Gωn_int = zero(Gωn)
+    cubic_spline_τ_to_ωn!(Gωn_int, Gτ, β, Δτ, spline_type = "C2")
+    ΔGωn = @. Gωn_int - Gωn
+    @test maximum(@. abs(real(ΔGωn)/real(Gωn)) ) < 1e-3
+    @test maximum(@. abs(imag(ΔGωn)/imag(Gωn)) ) < 1e-3
+
+    println("length(Gτ) = ", length(Gτ))
+    println("length(Gωn) = ", length(Gωn))
+
+    # Run a test to make sure cubic spline transforming fermionic Correlation from
+    # imaginary-time to Matsubara frequency is working correctly
+    ϵ = 1.1
+    β = 5.5
+    Δτ = 0.1
+    Lτ = round(Int, β/Δτ)
+    τ = collect(range(start=0, stop=β, length=Lτ+1))
+    Gτ = @. inv(exp(τ*ϵ) + exp((τ-β)*ϵ))
+    Nωn = 4*Lτ
+    n = collect(-Nωn:(Nωn-1))
+    ωn = @. (2n+1)*π/β
+    Gωn = @. inv(ϵ - im*ωn)
+    Gωn_int = zero(Gωn)
+    cubic_spline_τ_to_ωn!(Gωn_int, Gτ, β, Δτ, spline_type = "C2")
+    ΔGωn = @. Gωn_int - Gωn
+    @test maximum(@. abs(real(ΔGωn)/real(Gωn)) ) < 1e-3
+    @test maximum(@. abs(imag(ΔGωn)/imag(Gωn)) ) < 1e-3
+
+    println("length(Gτ) = ", length(Gτ))
+    println("length(Gωn) = ", length(Gωn))
+
+    # Run a test to make sure cubic spline transforming bosonic correlation from
+    # imaginary-time to Matsubara frequency is working correctly
+    ω = 1.1
+    β = 5.4
+    Δτ = 0.1
+    Lτ = round(Int, β/Δτ)
+    τ = collect(range(start=0, stop=β, length=Lτ+1))
+    Bτ = @. inv(exp(τ*ω) - exp((τ-β)*ω)) - inv(exp(-τ*ω) - exp(-(τ-β)*ω))
+    Nωn = 4*Lτ-1
+    n = collect(-Nωn:Nωn)
+    ωn = @. 2n*π/β
+    Bωn = zeros(Complex{Float64}, length(ωn))
+    @. Bωn = (2*ω)/(ω^2 + ωn^2)
+    Bωn_int = zero(Bωn)
+    cubic_spline_τ_to_ωn!(Bωn_int, Bτ, β, Δτ, spline_type = "C2")
+    ΔBωn = @. Bωn_int - Bωn
+    @test maximum(@. abs(real(ΔBωn)/real(Bωn)) ) < 1e-3
+
+    println("length(Bτ) = ", length(Bτ))
+    println("length(Bωn) = ", length(Bωn))
+
+        # Run a test to make sure cubic spline transforming bosonic correlation from
+    # imaginary-time to Matsubara frequency is working correctly
+    ω = 1.1
+    β = 5.5
+    Δτ = 0.1
+    Lτ = round(Int, β/Δτ)
+    τ = collect(range(start=0, stop=β, length=Lτ+1))
+    Bτ = @. inv(exp(τ*ω) - exp((τ-β)*ω)) - inv(exp(-τ*ω) - exp(-(τ-β)*ω))
+    Nωn = 4*Lτ-1
+    n = collect(-Nωn:Nωn)
+    ωn = @. 2n*π/β
+    Bωn = zeros(Complex{Float64}, length(ωn))
+    @. Bωn = (2*ω)/(ω^2 + ωn^2)
+    Bωn_int = zero(Bωn)
+    cubic_spline_τ_to_ωn!(Bωn_int, Bτ, β, Δτ, spline_type = "C2")
+    ΔBωn = @. Bωn_int - Bωn
+    @test maximum(@. abs(real(ΔBωn)/real(Bωn)) ) < 1e-3
+
+    println("length(Bτ) = ", length(Bτ))
+    println("length(Bωn) = ", length(Bωn))
 end

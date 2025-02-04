@@ -973,7 +973,7 @@ end
 
 Evaluate the sum
 ```math
-S_{\mathbf{r}}:=S_{\mathbf{r}}+\frac{\alpha}{N}\sum_{\mathbf{i}} \eta_{2,\mathbf{i}+\mathbf{r}{\eta_{1,\mathbf{i}} G_{\sigma_{2},\mathbf{i}+\mathbf{r}_{4},\mathbf{i}+\mathbf{r}+\mathbf{r}_{3}}^{a,b}(\tau_{2},0)\cdot G_{\sigma_{1},\mathbf{i}+\mathbf{r}+\mathbf{r}_{2},\mathbf{i}+\mathbf{r}_{1}}^{c,d}(\tau_{1},0)
+S_{\mathbf{r}}:=S_{\mathbf{r}}+\frac{\alpha}{N}\sum_{\mathbf{i}} \eta_{2,\mathbf{i}+\mathbf{r}}\eta_{1,\mathbf{i}} G_{\sigma_{2},\mathbf{i}+\mathbf{r}_{4},\mathbf{i}+\mathbf{r}+\mathbf{r}_{3}}^{a,b}(\tau_{2},0)\cdot G_{\sigma_{1},\mathbf{i}+\mathbf{r}+\mathbf{r}_{2},\mathbf{i}+\mathbf{r}_{1}}^{c,d}(\tau_{1},0)
 ```
 for all ``\mathbf{r}.``
 """

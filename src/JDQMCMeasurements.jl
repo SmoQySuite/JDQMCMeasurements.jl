@@ -55,4 +55,9 @@ export current_correlation!
 include("jackknife.jl")
 export jackknife
 
+include("matsubara_transforms/akima_spline.jl")
+include("matsubara_transforms/c2_cubic_spline.jl")
+include("matsubara_transforms/cubic_spline_transform.jl")
+export cubic_spline_τ_to_ωn!
+
 end
