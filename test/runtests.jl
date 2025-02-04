@@ -203,8 +203,8 @@ using Statistics
     @test maximum(@. abs(real(ΔGωn)/real(Gωn)) ) < 1e-3
     @test maximum(@. abs(imag(ΔGωn)/imag(Gωn)) ) < 1e-3
 
-    println("length(Gτ) = ", length(Gτ))
-    println("length(Gωn) = ", length(Gωn))
+    # println("length(Gτ) = ", length(Gτ))
+    # println("length(Gωn) = ", length(Gωn))
 
     # Run a test to make sure cubic spline transforming fermionic Correlation from
     # imaginary-time to Matsubara frequency is working correctly
@@ -224,8 +224,8 @@ using Statistics
     @test maximum(@. abs(real(ΔGωn)/real(Gωn)) ) < 1e-3
     @test maximum(@. abs(imag(ΔGωn)/imag(Gωn)) ) < 1e-3
 
-    println("length(Gτ) = ", length(Gτ))
-    println("length(Gωn) = ", length(Gωn))
+    # println("length(Gτ) = ", length(Gτ))
+    # println("length(Gωn) = ", length(Gωn))
 
     # Run a test to make sure cubic spline transforming bosonic correlation from
     # imaginary-time to Matsubara frequency is working correctly
@@ -245,8 +245,8 @@ using Statistics
     ΔBωn = @. Bωn_int - Bωn
     @test maximum(@. abs(real(ΔBωn)/real(Bωn)) ) < 1e-3
 
-    println("length(Bτ) = ", length(Bτ))
-    println("length(Bωn) = ", length(Bωn))
+    # println("length(Bτ) = ", length(Bτ))
+    # println("length(Bωn) = ", length(Bωn))
 
         # Run a test to make sure cubic spline transforming bosonic correlation from
     # imaginary-time to Matsubara frequency is working correctly
@@ -266,6 +266,6 @@ using Statistics
     ΔBωn = @. Bωn_int - Bωn
     @test maximum(@. abs(real(ΔBωn)/real(Bωn)) ) < 1e-3
 
-    println("length(Bτ) = ", length(Bτ))
-    println("length(Bωn) = ", length(Bωn))
+    # println("length(Bτ) = ", length(Bτ))
+    # println("length(Bωn) = ", length(Bωn))
 end
