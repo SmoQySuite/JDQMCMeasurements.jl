@@ -41,7 +41,7 @@ function average_Gr0(
     ipr = sa.circshift(i, tmp) # i + r
 
     # iterate over unit cell
-    @fastmath @inbounds for n in eachindex(i)
+    @inbounds for n in eachindex(i)
         Gr0 += Gab[ipr[n],i[n]] 
     end
 
@@ -95,7 +95,7 @@ function average_ηGr0(
     ipr = sa.circshift(i, tmp) # i + r
 
     # iterate over unit cell
-    @fastmath @inbounds for n in eachindex(i)
+    @inbounds for n in eachindex(i)
         Gr0 += η[i[n]] * Gab[ipr[n],i[n]] 
     end
 
@@ -191,7 +191,7 @@ function contract_Gr0!(
     # evaluate S(r) = S(r) + α/N sum_i G(a,i+r+r₁|b,i)
     i = reshape(1:N, L)
     αN⁻¹ = sgn * α/N
-    @fastmath @inbounds for r in CartesianIndices(S)
+    @inbounds for r in CartesianIndices(S)
         @. tmp = -(r.I-1+r₁)
         iprpr₁ = sa.circshift(i, tmp)
         for n in CartesianIndices(S)
@@ -245,7 +245,7 @@ function contract_Gr0!(
     # evaluate S(r) = S(r) + α/N sum_i η(i)⋅G(a,i+r+r₁|b,i)
     i = reshape(1:N, L)
     αN⁻¹ = sgn * α/N
-    @fastmath @inbounds for r in CartesianIndices(S)
+    @inbounds for r in CartesianIndices(S)
         @. tmp = -(r.I-1+r₁)
         iprpr₁ = sa.circshift(i, tmp)
         for n in CartesianIndices(S)
@@ -305,7 +305,7 @@ function contract_Grr_G00!(
     ipr₁ = sa.circshift(i, tmp) # i + r₁
     αN⁻¹ = sgn * α/N
     # iterate over displacements
-    @fastmath @inbounds for r in CartesianIndices(S)
+    @inbounds for r in CartesianIndices(S)
         @. tmp = -(r.I-1)
         ipr = sa.circshift(i, tmp) # i + r
         @. tmp = -(r.I-1+r₂)
@@ -368,7 +368,7 @@ function contract_Grr_G00!(
     ipr₁ = sa.circshift(i, tmp) # i + r₁
     αN⁻¹ = sgn * α/N
     # iterate over displacements
-    @fastmath @inbounds for r in CartesianIndices(S)
+    @inbounds for r in CartesianIndices(S)
         @. tmp = -(r.I-1)
         ipr = sa.circshift(i, tmp) # i + r
         @. tmp = -(r.I-1+r₂)
@@ -433,7 +433,7 @@ function contract_Grr_G00!(
     @. tmp = -r₁
     ipr₁ = sa.circshift(i, tmp) # i + r₁
     # iterate over displacements
-    @fastmath @inbounds for r in CartesianIndices(S)
+    @inbounds for r in CartesianIndices(S)
         @. tmp = -(r.I - 1 + r₄)
         iprpr₄ = sa.circshift(i, tmp) # i + r + r₄
         @. tmp = -(r.I - 1 + r₃)
@@ -496,7 +496,7 @@ function contract_Grr_G00!(
     @. tmp = -r₁
     ipr₁ = sa.circshift(i, tmp) # i + r₁
     # iterate over displacements
-    @fastmath @inbounds for r in CartesianIndices(S)
+    @inbounds for r in CartesianIndices(S)
         @. tmp = -(r.I-1)
         ipr    = sa.circshift(i, tmp)
         @. tmp = -(r.I - 1 + r₄)
@@ -562,7 +562,7 @@ function contract_Gr0_Gr0!(
     ipr₁ = sa.circshift(i, tmp) # i + r₁
     αN⁻¹ = sgn * α/N
     # iterate over displacements
-    @fastmath @inbounds for r in CartesianIndices(S)
+    @inbounds for r in CartesianIndices(S)
         @. tmp = -(r.I-1)
         ipr = sa.circshift(i, tmp) # i + r
         @. tmp = -(r.I-1+r₂)
@@ -625,7 +625,7 @@ function contract_Gr0_Gr0!(
     ipr₁ = sa.circshift(i, tmp) # i + r₁
     αN⁻¹ = sgn * α/N
     # iterate over displacements
-    @fastmath @inbounds for r in CartesianIndices(S)
+    @inbounds for r in CartesianIndices(S)
         @. tmp = -(r.I-1)
         ipr = sa.circshift(i, tmp) # i + r
         @. tmp = -(r.I-1+r₂)
@@ -690,7 +690,7 @@ function contract_Gr0_Gr0!(
     @. tmp = -r₁
     ipr₁ = sa.circshift(i, tmp) # i + r₁
     # iterate over displacements
-    @fastmath @inbounds for r in CartesianIndices(S)
+    @inbounds for r in CartesianIndices(S)
         @. tmp = -(r.I - 1 + r₄)
         iprpr₄ = sa.circshift(i, tmp) # i + r + r₄
         @. tmp = -(r.I - 1 + r₂)
@@ -753,7 +753,7 @@ function contract_Gr0_Gr0!(
     @. tmp = -r₁
     ipr₁ = sa.circshift(i, tmp) # i + r₁
     # iterate over displacements
-    @fastmath @inbounds for r in CartesianIndices(S)
+    @inbounds for r in CartesianIndices(S)
         @. tmp = -(r.i - 1)
         ipr    = sa.circshift(i, tmp) # i + r
         @. tmp = -(r.I - 1 + r₄)
@@ -819,7 +819,7 @@ function contract_G0r_Gr0!(
     ipr₂ = sa.circshift(i, tmp) # i + r₂
     αN⁻¹ = sgn * α/N
     # iterate over displacements
-    @fastmath @inbounds for r in CartesianIndices(S)
+    @inbounds for r in CartesianIndices(S)
         @. tmp = -(r.I-1)
         ipr = sa.circshift(i, tmp) # i + r
         @. tmp = -((r.I-1)+r₁)
@@ -882,7 +882,7 @@ function contract_G0r_Gr0!(
     ipr₂ = sa.circshift(i, tmp) # i + r₂
     αN⁻¹ = sgn * α/N
     # iterate over displacements
-    @fastmath @inbounds for r in CartesianIndices(S)
+    @inbounds for r in CartesianIndices(S)
         @. tmp = -(r.I-1)
         ipr = sa.circshift(i, tmp) # i + r
         @. tmp = -((r.I-1)+r₁)
@@ -947,7 +947,7 @@ function contract_G0r_Gr0!(
     @. tmp = -r₁
     ipr₁ = sa.circshift(i, tmp) # i + r₁
     # iterate over displacements
-    @fastmath @inbounds for r in CartesianIndices(S)
+    @inbounds for r in CartesianIndices(S)
         @. tmp = -(r.I - 1 + r₃)
         iprpr₃ = sa.circshift(i, tmp) # i + r + r₃
         @. tmp = -(r.I - 1 + r₂)
@@ -1010,7 +1010,7 @@ function contract_G0r_Gr0!(
     @. tmp = -r₁
     ipr₁ = sa.circshift(i, tmp) # i + r₁
     # iterate over displacements
-    @fastmath @inbounds for r in CartesianIndices(S)
+    @inbounds for r in CartesianIndices(S)
         @. tmp = -(r.I - 1)
         ipr    = sa.circshift(i, tmp) # i + r
         @. tmp = -(r.I - 1 + r₃)
@@ -1039,7 +1039,7 @@ function simpson(f::AbstractVector{T}, dx::E) where {T<:Number, E<:AbstractFloat
 
     L = length(f)
     F = zero(T)
-    @fastmath @inbounds for i in 2:2:L-1
+    @inbounds for i in 2:2:L-1
         F += dx * ( 1/3*f[i-1] + 4/3*f[i] + 1/3*f[i+1] )
     end
     if iseven(L)
