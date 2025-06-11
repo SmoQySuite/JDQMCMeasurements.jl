@@ -21,7 +21,7 @@ where the spin-``\hat{x}`` operator is given by
 \hat{a}_{\uparrow,\mathbf{i}}\\
 \hat{a}_{\downarrow,\mathbf{i}}
 \end{array}\right)\\
-= & \hat{a}_{\uparrow,\mathbf{i}}^{\dagger}\hat{a}_{\downarrow,\mathbf{i}}+\hat{a}_{\downarrow,\mathbf{i}}^{\dagger}\hat{a}_{\uparrow,\mathbf{i}}.
+= & \frac{1}{2}\left(\hat{a}_{\uparrow,\mathbf{i}}^{\dagger}\hat{a}_{\downarrow,\mathbf{i}}+\hat{a}_{\downarrow,\mathbf{i}}^{\dagger}\hat{a}_{\uparrow,\mathbf{i}}\right).
 \end{align*}
 ```
 
@@ -52,9 +52,9 @@ function spin_x_correlation!(
     b_ba = Bond((a,b), z)::Bond{D} # displacement r_b - r_a
 
     # SxSx(τ,r) = SxSx(τ,r) - 1/N sum_i G₊(b,i,β-τ|a,i+r,0)⋅G₋(a,i+r,τ|b,i,0)
-    contract_G0r_Gr0!(SxSx, Gup_0τ, Gdn_τ0, b_ba, b_ab, -1, unit_cell, lattice, sgn)
+    contract_G0r_Gr0!(SxSx, Gup_0τ, Gdn_τ0, b_ba, b_ab, -1, unit_cell, lattice, sgn/4)
     # SxSx(τ,r) = SxSx(τ,r) - 1/N sum_i G₋(b,i,β-τ|a,i+r,0)⋅G₊(a,i+r,τ|b,i,0)
-    contract_G0r_Gr0!(SxSx, Gdn_0τ, Gup_τ0, b_ba, b_ab, -1, unit_cell, lattice, sgn)
+    contract_G0r_Gr0!(SxSx, Gdn_0τ, Gup_τ0, b_ba, b_ab, -1, unit_cell, lattice, sgn/4)
 
     return nothing
 end

@@ -26,7 +26,7 @@ where the spin-``\hat{z}`` operator is given by
 \hat{a}_{\uparrow,\mathbf{i}}\\
 \hat{a}_{\downarrow,\mathbf{i}}
 \end{array}\right)\\
-= & \hat{n}_{\uparrow,a,\mathbf{i}}-\hat{n}_{\downarrow,a,\mathbf{i}}.
+= & \frac{1}{2} \left( \hat{n}_{\uparrow,a,\mathbf{i}}-\hat{n}_{\downarrow,a,\mathbf{i}} \right).
 \end{align*}
 ```
 
@@ -65,19 +65,19 @@ function spin_z_correlation!(
     b_ba = Bond((a,b), z)::Bond{D} # displacement r_b - r_a
 
     # SzSz(τ,r) = SzSz(τ,r) + 1/N sum_i G₊(a,i+r,τ|a,i+r,τ)⋅G₊(b,i,0|b,i,0)
-    contract_Grr_G00!(SzSz, Gup_ττ, Gup_00, b_aa, b_bb, 1, unit_cell, lattice, sgn)
+    contract_Grr_G00!(SzSz, Gup_ττ, Gup_00, b_aa, b_bb, 1, unit_cell, lattice, sgn/4)
     # SzSz(τ,r) = SzSz(τ,r) + 1/N sum_i G₋(a,i+r,τ|a,i+r,τ)⋅G₋(b,i,0|b,i,0)
-    contract_Grr_G00!(SzSz, Gdn_ττ, Gdn_00, b_aa, b_bb, 1, unit_cell, lattice, sgn)
-    
+    contract_Grr_G00!(SzSz, Gdn_ττ, Gdn_00, b_aa, b_bb, 1, unit_cell, lattice, sgn/4)
+
     # SzSz(τ,r) = SzSz(τ,r) - 1/N sum_i G₊(a,i+r,τ|a,i+r,τ)⋅G₋(b,i,0|b,i,0)
-    contract_Grr_G00!(SzSz, Gup_ττ, Gdn_00, b_aa, b_bb, -1, unit_cell, lattice, sgn)
+    contract_Grr_G00!(SzSz, Gup_ττ, Gdn_00, b_aa, b_bb, -1, unit_cell, lattice, sgn/4)
     # SzSz(τ,r) = SzSz(τ,r) - 1/N sum_i G₋(a,i+r,τ|a,i+r,τ)⋅G₊(b,i,0|b,i,0)
-    contract_Grr_G00!(SzSz, Gdn_ττ, Gup_00, b_aa, b_bb, -1, unit_cell, lattice, sgn)
+    contract_Grr_G00!(SzSz, Gdn_ττ, Gup_00, b_aa, b_bb, -1, unit_cell, lattice, sgn/4)
 
     # SzSz(τ,r) = SzSz(τ,r) + 1/N sum_i G₊(b,i,0|a,i+r,τ)⋅G₊(a,i+r,τ|b,i,0)
-    contract_G0r_Gr0!(SzSz, Gup_0τ, Gup_τ0, b_ba, b_ab, -1, unit_cell, lattice, sgn)
+    contract_G0r_Gr0!(SzSz, Gup_0τ, Gup_τ0, b_ba, b_ab, -1, unit_cell, lattice, sgn/4)
     # SzSz(τ,r) = SzSz(τ,r) + 1/N sum_i G₋(b,i,0|a,i+r,τ)⋅G₋(a,i+r,τ|b,i,0)
-    contract_G0r_Gr0!(SzSz, Gdn_0τ, Gdn_τ0, b_ba, b_ab, -1, unit_cell, lattice, sgn)
+    contract_G0r_Gr0!(SzSz, Gdn_0τ, Gdn_τ0, b_ba, b_ab, -1, unit_cell, lattice, sgn/4)
 
     return nothing
 end
