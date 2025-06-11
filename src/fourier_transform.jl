@@ -34,12 +34,12 @@
 Calculate the fourier transform from position to momentum space
 ```math
 \begin{align*}
-C_{\mathbf{K}}^{a,b}= & \sum_{\mathbf{R}}e^{{\rm -i}\mathbf{K}\cdot(\mathbf{R}+\mathbf{r})}C_{\mathbf{R + r}}
+C_{\mathbf{K}} = & \sum_{\mathbf{R}}e^{{\rm -i}\mathbf{K}\cdot(\mathbf{R}+\mathbf{r})}C_{\mathbf{R}}
 \end{align*}
 ```
-where ``r`` is a constant displacement vector.
-If orbitals ``a`` and ``b`` are passed, then they specify orbital species such that ``\mathbf{r} = \mathbf{r}_a - \mathbf{r}_b``,
-where ``\mathbf{r}_a`` and ``\mathbf{r}_b`` are the positions of the orbitals in the unit cell.
+where ``\mathbf{r}`` is a constant displacement vector.
+If orbitals ``a`` and ``b`` are passed, then ``\mathbf{r} = \mathbf{r}_a - \mathbf{r}_b``
+where ``\mathbf{r}_a`` and ``\mathbf{r}_b`` are the basis vectors for each orbital in the unit cell.
 Note that the array `C` is modified in-place.
 If `dims` is passed, iterate over these dimensions of the array, performing a fourier transform on each slice.
 """
