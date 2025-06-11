@@ -35,13 +35,13 @@ function jackknife(
         # iterate over samples
         for j in eachindex(samples[i])
 
-            # calculate jackknife sample by updating the mean to
+            # calculate the mean of the j'th jackknife sample by updating the mean to
             # reflect removing the j'th sample
-            jackknife_samples[i][j] = x̄ + (x̄ - samples[i][j])/(N-1)
+            jackknife_samples[i][j] = (N*x̄ - samples[i][j])/(N-1)
         end
     end
 
-    # evaluate the input function for each jackknife sample
+    # evaluate the input function using the jackknife sample means
     @. jackknife_g = g(jackknife_samples...)
 
     # calculate jackknife mean
