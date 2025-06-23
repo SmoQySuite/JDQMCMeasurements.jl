@@ -55,9 +55,14 @@ export current_correlation!
 include("jackknife.jl")
 export jackknife
 
+# functionality to fourier transform imaginary-time correlation data to matsubara frequency
+# space using cubic spline fits. These methods make use of ldiv!(tri, v) function where tri
+# is a TriDiagonal matrix, that is only available in v1.11 of Julia and later.
 include("matsubara_transforms/akima_spline.jl")
 include("matsubara_transforms/c2_cubic_spline.jl")
 include("matsubara_transforms/cubic_spline_transform.jl")
-export cubic_spline_τ_to_ωn!
+@static if VERSION >= v"1.11"
+    export cubic_spline_τ_to_ωn!
+end
 
 end
