@@ -59,8 +59,11 @@ function fourier_transform!(
         r_b = unit_cell.basis_vecs[b]
         @. r = r_a - r_b
     end
+    rvec = SVector{D,T}(r)
 
-    fourier_transform!(C, r, dims, unit_cell, lattice)
+    for C_l in eachslice(C, dims = dims)
+        fourier_transform!(C_l, rvec, unit_cell, lattice)
+    end
 
     return nothing
 end
@@ -74,8 +77,11 @@ function fourier_transform!(
     lattice::Lattice{D}
 ) where {D, T<:AbstractFloat}
 
+    @assert length(r) == D "r must be a vector of length $D"
+    rvec = SVector{D,T}(r)
+
     for C_l in eachslice(C, dims = dims)
-        fourier_transform!(C_l, r, unit_cell, lattice)
+        fourier_transform!(C_l, rvec, unit_cell, lattice)
     end
 
     return nothing
@@ -97,9 +103,10 @@ function fourier_transform!(
         r_b = unit_cell.basis_vecs[b]
         @. r = r_a - r_b
     end
+    rvec = SVector{D,T}(r)
 
     # perform fourier transform
-    fourier_transform!(C, r, unit_cell, lattice)
+    fourier_transform!(C, rvec, unit_cell, lattice)
 
     return nothing
 end
@@ -114,6 +121,21 @@ function fourier_transform!(
 ) where {D, T<:AbstractFloat}
 
     @assert length(r) == D "r must be a vector of length $D"
+    rvec = SVector{D,T}(r)
+    
+    fourier_transform!(C, rvec, unit_cell, lattice)
+
+    return nothing
+end
+
+
+# perform fourier transform where `r` is a constant displacement vector
+function fourier_transform!(
+    C::AbstractArray{Complex{T}},
+    r::SVector{D,T},
+    unit_cell::UnitCell{D,T},
+    lattice::Lattice{D}
+) where {D, T<:AbstractFloat}
 
     # perform standard FFT from position to momentum space
     fft!(C)
@@ -122,7 +144,6 @@ function fourier_transform!(
     if !iszero(r)
 
         # initiailize temporary storage vecs
-        r_vec   = SVector{D,T}(r)
         k_point = MVector{D,T}(undef)
 
         # have the array index from zero
@@ -133,7 +154,7 @@ function fourier_transform!(
             # transform to appropriate gauge accounting for basis vector
             # i.e. relative position of orbitals within unit cell
             calc_k_point!(k_point, k.I, unit_cell, lattice)
-            C′[k] = exp(-im*dot(k_point,r_vec)) * C′[k]
+            C′[k] = exp(-im*dot(k_point,r)) * C′[k]
         end
     end
 
