@@ -194,9 +194,11 @@ function contract_Gr0!(
     @inbounds for r in CartesianIndices(S)
         @. tmp = -(r.I-1+r₁)
         iprpr₁ = sa.circshift(i, tmp)
-        for n in CartesianIndices(S)
-            S[r] += αN⁻¹ * Gab[iprpr₁[n], i[n]]
+        val = zero(C)
+        @simd for n in CartesianIndices(S)
+            val += Gab[iprpr₁[n], i[n]]
         end
+        S[r] += αN⁻¹ * val
     end
 
     return nothing
@@ -248,9 +250,11 @@ function contract_Gr0!(
     @inbounds for r in CartesianIndices(S)
         @. tmp = -(r.I-1+r₁)
         iprpr₁ = sa.circshift(i, tmp)
-        for n in CartesianIndices(S)
-            S[r] += αN⁻¹ * η[i[n]] * Gab[iprpr₁[n], i[n]]
+        val = zero(C)
+        @simd for n in CartesianIndices(S)
+            val += η[i[n]] * Gab[iprpr₁[n], i[n]]
         end
+        S[r] += αN⁻¹ * val
     end
 
     return nothing
@@ -311,10 +315,12 @@ function contract_Grr_G00!(
         @. tmp = -(r.I-1+r₂)
         iprpr₂ = sa.circshift(i, tmp) # i + r + r₂
         # average over translation symmetry
-        for n in CartesianIndices(S)
+        val = zero(C)
+        @simd for n in CartesianIndices(S)
             # S(r) = S(r) + α/N sum_i G₂(a,i+r+r₂|b,i+r)⋅G₁(c,i+r₁|d,i)
-            S[r] += αN⁻¹ * G₂_ab[iprpr₂[n],ipr[n]] * G₁_cd[ipr₁[n],i[n]]
+            val += G₂_ab[iprpr₂[n],ipr[n]] * G₁_cd[ipr₁[n],i[n]]
         end
+        S[r] += αN⁻¹ * val
     end
 
     return nothing
@@ -374,12 +380,14 @@ function contract_Grr_G00!(
         @. tmp = -(r.I-1+r₂)
         iprpr₂ = sa.circshift(i, tmp) # i + r + r₂
         # average over translation symmetry
-        for n in CartesianIndices(S)
+        val = zero(C)
+        @simd for n in CartesianIndices(S)
             # S(r) = S(r) + α/N sum_i η(i+r)⋅η(i)⋅G₂(a,i+r+r₂|b,i+r)⋅G₁(c,i+r₁|d,i)
             η₂_ipr = conj_η₂ ? conj(η₂[ipr[n]]) : η₂[ipr[n]]
             η₁_i   = conj_η₁ ? conj(η₁[i[n]]) : η₁[i[n]]
-            S[r] += αN⁻¹ * η₂_ipr * η₁_i * G₂_ab[iprpr₂[n],ipr[n]] * G₁_cd[ipr₁[n],i[n]]
+            val += η₂_ipr * η₁_i * G₂_ab[iprpr₂[n],ipr[n]] * G₁_cd[ipr₁[n],i[n]]
         end
+        S[r] += αN⁻¹ * val
     end
 
     return nothing
@@ -439,10 +447,12 @@ function contract_Grr_G00!(
         @. tmp = -(r.I - 1 + r₃)
         iprpr₃ = sa.circshift(i, tmp) # i + r + r₃
         # average over translation symmetry
-        for n in CartesianIndices(S)
+        val = zero(C)
+        @simd for n in CartesianIndices(S)
             # S(r) = S(r) + α/N sum_i G₂(a,i+r+r₄|b,i+r+r₃)⋅G₁(c,i+r₂|d,i+r₁)
-            S[r] += αN⁻¹ * G₂_ab[iprpr₄[n],iprpr₃[n]] * G₁_cd[ipr₂[n],ipr₁[n]]
+            val += G₂_ab[iprpr₄[n],iprpr₃[n]] * G₁_cd[ipr₂[n],ipr₁[n]]
         end
+        S[r] += αN⁻¹ * val
     end
 
     return nothing
@@ -504,12 +514,14 @@ function contract_Grr_G00!(
         @. tmp = -(r.I - 1 + r₃)
         iprpr₃ = sa.circshift(i, tmp) # i + r + r₃
         # average over translation symmetry
-        for n in CartesianIndices(S)
+        val = zero(C)
+        @simd for n in CartesianIndices(S)
             # S(r) = S(r) + α/N sum_i η₂(i+r)⋅η₁(i)⋅G₂(a,i+r+r₄|b,i+r+r₃)⋅G₁(c,i+r₂|d,i+r₁)
             η₂_ipr = conj_η₂ ? conj(η₂[ipr[n]]) : η₂[ipr[n]]
             η₁_i   = conj_η₁ ? conj(η₁[i[n]]) : η₁[i[n]]
-            S[r] += αN⁻¹ * η₂_ipr * η₁_i * G₂_ab[iprpr₄[n],iprpr₃[n]] * G₁_cd[ipr₂[n],ipr₁[n]]
+            val += η₂_ipr * η₁_i * G₂_ab[iprpr₄[n],iprpr₃[n]] * G₁_cd[ipr₂[n],ipr₁[n]]
         end
+        S[r] += αN⁻¹ * val
     end
 
     return nothing
@@ -568,10 +580,12 @@ function contract_Gr0_Gr0!(
         @. tmp = -(r.I-1+r₂)
         iprpr₂ = sa.circshift(i, tmp) # i + r + r₂
         # average over translation symmetry
-        for n in CartesianIndices(S)
+        val = zero(C)
+        @simd for n in CartesianIndices(S)
             # S(r) = S(r) + α/N sum_i G₂(a,i+r+r₂|c,i+r₁)⋅G₁(b,i+r|d,i)
-            S[r] += αN⁻¹ * G₂_ac[iprpr₂[n],ipr₁[n]] * G₁_bd[ipr[n],i[n]]
+            val += G₂_ac[iprpr₂[n],ipr₁[n]] * G₁_bd[ipr[n],i[n]]
         end
+        S[r] += αN⁻¹ * val
     end
 
     return nothing
@@ -631,12 +645,14 @@ function contract_Gr0_Gr0!(
         @. tmp = -(r.I-1+r₂)
         iprpr₂ = sa.circshift(i, tmp) # i + r + r₂
         # average over translation symmetry
-        for n in CartesianIndices(S)
+        val = zero(C)
+        @simd for n in CartesianIndices(S)
             # S(r) = S(r) + α/N sum_i η₂(i+r)⋅η₁(i)⋅G₂(a,i+r+r₂|c,i+r₁)⋅G₁(b,i+r|d,i)
             η₂_ipr = conj_η₂ ? conj(η₂[ipr[n]]) : η₂[ipr[n]]
             η₁_i   = conj_η₁ ? conj(η₁[i[n]]) : η₁[i[n]]
-            S[r] += αN⁻¹ * η₂_ipr * η₁_i * G₂_ac[iprpr₂[n],ipr₁[n]] * G₁_bd[ipr[n],i[n]]
+            val += η₂_ipr * η₁_i * G₂_ac[iprpr₂[n],ipr₁[n]] * G₁_bd[ipr[n],i[n]]
         end
+        S[r] += αN⁻¹ * val
     end
 
     return nothing
@@ -696,10 +712,12 @@ function contract_Gr0_Gr0!(
         @. tmp = -(r.I - 1 + r₂)
         iprpr₂ = sa.circshift(i, tmp) # i + r + r₂
         # average over translation symmetry
-        for n in CartesianIndices(S)
+        val = zero(C)
+        @simd for n in CartesianIndices(S)
             # S(r) = S(r) + α/N sum_i G₂(a,i+r+r₄|b,i+r₃)⋅G₁(c,i+r+r₂|d,i+r₁)
-            S[r] += αN⁻¹ * G₂_ab[iprpr₄[n],ipr₃[n]] * G₁_cd[iprpr₂[n],ipr₁[n]]
+            val += G₂_ab[iprpr₄[n],ipr₃[n]] * G₁_cd[iprpr₂[n],ipr₁[n]]
         end
+        S[r] += αN⁻¹ * val
     end
 
     return nothing
@@ -761,12 +779,14 @@ function contract_Gr0_Gr0!(
         @. tmp = -(r.I - 1 + r₂)
         iprpr₂ = sa.circshift(i, tmp) # i + r + r₂
         # average over translation symmetry
-        for n in CartesianIndices(S)
+        val = zero(C)
+        @simd for n in CartesianIndices(S)
             # S(r) = S(r) + α/N sum_i η₂(i+r)⋅η₁(i)⋅G₂(a,i+r+r₄|b,i+r₃)⋅G₁(c,i+r+r₂|d,i+r₁)
             η₂_ipr = conj_η₂ ? conj(η₂[ipr[n]]) : η₂[ipr[n]]
             η₁_i   = conj_η₁ ? conj(η₁[i[n]]) : η₁[i[n]]
-            S[r] += αN⁻¹ * η₂_ipr * η₁_i * G₂_ab[iprpr₄[n],ipr₃[n]] * G₁_cd[iprpr₂[n],ipr₁[n]]
+            val += η₂_ipr * η₁_i * G₂_ab[iprpr₄[n],ipr₃[n]] * G₁_cd[iprpr₂[n],ipr₁[n]]
         end
+        S[r] += αN⁻¹ * val
     end
 
     return nothing
@@ -825,10 +845,12 @@ function contract_G0r_Gr0!(
         @. tmp = -((r.I-1)+r₁)
         iprpr₁ = sa.circshift(i, tmp) # i + r + r₁
         # average over translation symmetry
-        for n in CartesianIndices(S)
+        val = zero(C)
+        @simd for n in CartesianIndices(S)
             # S(r) = S(r) + α/N sum_i G₂(a,i+r₂|b,i+r)⋅G₁(c,i+r+r₁|d,i)
-            S[r] += αN⁻¹ * G₂_ab[ipr₂[n],ipr[n]] * G₁_cd[iprpr₁[n],i[n]]
+            val += G₂_ab[ipr₂[n],ipr[n]] * G₁_cd[iprpr₁[n],i[n]]
         end
+        S[r] += αN⁻¹ * val
     end
     
     return nothing
@@ -888,12 +910,14 @@ function contract_G0r_Gr0!(
         @. tmp = -((r.I-1)+r₁)
         iprpr₁ = sa.circshift(i, tmp) # i + r + r₁
         # average over translation symmetry
-        for n in CartesianIndices(S)
+        val = zero(C)
+        @simd for n in CartesianIndices(S)
             # S(r) = S(r) + α/N sum_i η₂(i+r)⋅η₁(i)⋅G₂(a,i+r₂|b,i+r)⋅G₁(c,i+r+r₁|d,i)
             η₂_ipr = conj_η₂ ? conj(η₂[ipr[n]]) : η₂[ipr[n]]
             η₁_i   = conj_η₁ ? conj(η₁[i[n]]) : η₁[i[n]]
-            S[r] += αN⁻¹ * η₂_ipr * η₁_i * G₂_ab[ipr₂[n],ipr[n]] * G₁_cd[iprpr₁[n],i[n]]
+            val += η₂_ipr * η₁_i * G₂_ab[ipr₂[n],ipr[n]] * G₁_cd[iprpr₁[n],i[n]]
         end
+        S[r] += αN⁻¹ * val
     end
     
     return nothing
@@ -953,10 +977,12 @@ function contract_G0r_Gr0!(
         @. tmp = -(r.I - 1 + r₂)
         iprpr₂ = sa.circshift(i, tmp) # i + r + r₂
         # average over translation symmetry
-        for n in CartesianIndices(S)
+        val = zero(C)
+        @simd for n in CartesianIndices(S)
             # S(r) = S(r) + α/N sum_i G₂(a,i+r₄|b,i+r+r₃)⋅G₁(c,i+r+r₂|d,i+r₁)
-            S[r] += αN⁻¹ * G₂_ab[ipr₄[n],iprpr₃[n]] * G₁_cd[iprpr₂[n],ipr₁[n]]
+            val += G₂_ab[ipr₄[n],iprpr₃[n]] * G₁_cd[iprpr₂[n],ipr₁[n]]
         end
+        S[r] += αN⁻¹ * val
     end
 
     return nothing
@@ -1018,12 +1044,14 @@ function contract_G0r_Gr0!(
         @. tmp = -(r.I - 1 + r₂)
         iprpr₂ = sa.circshift(i, tmp) # i + r + r₂
         # average over translation symmetry
-        for n in CartesianIndices(S)
+        val = zero(C)
+        @simd for n in CartesianIndices(S)
             # S(r) = S(r) + α/N sum_i η₂(i+r)⋅η₁(i)⋅G₂(a,i+r₄|b,i+r+r₃)⋅G₁(c,i+r+r₂|d,i+r₁)
             η₂_ipr = conj_η₂ ? conj(η₂[ipr[n]]) : η₂[ipr[n]]
             η₁_i   = conj_η₁ ? conj(η₁[i[n]]) : η₁[i[n]]
-            S[r] += αN⁻¹ * η₂_ipr * η₁_i * G₂_ab[ipr₄[n],iprpr₃[n]] * G₁_cd[iprpr₂[n],ipr₁[n]]
+            val += η₂_ipr * η₁_i * G₂_ab[ipr₄[n],iprpr₃[n]] * G₁_cd[iprpr₂[n],ipr₁[n]]
         end
+        S[r] += αN⁻¹ * val
     end
 
     return nothing

@@ -26,19 +26,23 @@ function jackknife(
     # get sample size
     N = length(jackknife_g)
 
+    # calculate mean of each input variable
+    x̄ = map(mean, samples)
+
     # iterate over input variables
     for i in eachindex(samples)
 
-        # calculate mean current input variable
-        x̄ = mean(samples[i])
+        # get the mean of the current sample multiplied by sample size
+        Nx̄_i = N * x̄[i]
 
-        # iterate over samples
-        for j in eachindex(samples[i])
+        # get the vector to contain the jackknife sample means
+        jackknife_sample_means_i = jackknife_sample_means[i]
 
-            # calculate the mean of the j'th jackknife sample by updating the mean to
-            # reflect removing the j'th sample
-            jackknife_sample_means[i][j] = (N*x̄ - samples[i][j])/(N-1)
-        end
+        # get the input samples
+        samples_i = samples[i]
+
+        # calculate jackknife sample means
+        @. jackknife_sample_means_i = (Nx̄_i - samples_i)/(N-1)
     end
 
     # evaluate the input function using the jackknife sample means
@@ -53,7 +57,7 @@ function jackknife(
     # correct O(1/N) bias, usually doesn't matter as error scales as O(1/sqrt(N))
     # and is typically much larger than the bias
     if bias_corrected
-        Ḡ = g(map(mean, samples)...)
+        Ḡ = g(x̄...)
         ḡ = N * Ḡ - (N-1) * ḡ
     end
 
