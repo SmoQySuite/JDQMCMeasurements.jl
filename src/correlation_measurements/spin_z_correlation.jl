@@ -19,7 +19,8 @@ Calculate the unequal-time spin-spin correlation function in the ``\hat{z}`` dir
 where the spin-``\hat{z}`` operator is given by
 ```math
 \begin{align*}
-\hat{S}_{z,a,\mathbf{i}}= & (\hat{a}_{\uparrow,\mathbf{i}}^{\dagger},\hat{a}_{\downarrow,\mathbf{i}}^{\dagger})\left[\begin{array}{cc}
+\hat{S}_{z,a,\mathbf{i}}= & 
+frac{1}{2} (\hat{a}_{\uparrow,\mathbf{i}}^{\dagger},\hat{a}_{\downarrow,\mathbf{i}}^{\dagger})\left[\begin{array}{cc}
 1 & 0\\
 0 & -1
 \end{array}\right]\left(\begin{array}{c}

@@ -51,7 +51,7 @@ function jackknife(
     # calculate jackknife mean
     ḡ = mean(jackknife_g)
 
-    # calculate jackkife error
+    # calculate jackknife error
     Δg = sqrt( (N-1) * varm(jackknife_g, ḡ, corrected=false) )
 
     # correct O(1/N) bias, usually doesn't matter as error scales as O(1/sqrt(N))
