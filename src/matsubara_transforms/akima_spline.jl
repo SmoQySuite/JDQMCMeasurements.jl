@@ -13,7 +13,7 @@ function akima_spline!(
     # calculate first finite difference
     @views @. m[3:end-2] = (Cτ[2:end] - Cτ[1:end-1])/Δτ
 
-    # parabolic extrapolation to get firt and last two endpoints
+    # parabolic extrapolation to get first and last two endpoints
     m[2] = 2m[3] - m[4]
     m[1] = 2m[2] - m[3]
     m[end - 1] = 2m[end - 2] - m[end - 3]
@@ -46,7 +46,7 @@ function akima_spline!(
     # set b coefficients
     @views @. b = s[1:end-1]
 
-    # calculate c coeffients
+    # calculate c coefficients
     @views @. c = (3m[3:end-2] - 2s[1:end-1] - s[2:end]) / Δτ
 
     # calculate d coefficients
@@ -70,7 +70,7 @@ function makima_spline!(
     # calculate first finite difference
     @views @. m[3:end-2] = (Cτ[2:end] - Cτ[1:end-1])/Δτ
 
-    # parabolic extrapolation to get firt and last two endpoints
+    # parabolic extrapolation to get first and last two endpoints
     m[2] = 2m[3] - m[4]
     m[1] = 2m[2] - m[3]
     m[end - 1] = 2m[end - 2] - m[end - 3]
@@ -103,7 +103,7 @@ function makima_spline!(
     # set b coefficients
     @views @. b = s[1:end-1]
 
-    # calculate c coeffients
+    # calculate c coefficients
     @views @. c = (3m[3:end-2] - 2s[1:end-1] - s[2:end]) / Δτ
 
     # calculate d coefficients

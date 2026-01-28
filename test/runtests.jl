@@ -248,7 +248,7 @@ using Statistics
     # println("length(Bτ) = ", length(Bτ))
     # println("length(Bωn) = ", length(Bωn))
 
-        # Run a test to make sure cubic spline transforming bosonic correlation from
+    # Run a test to make sure cubic spline transforming bosonic correlation from
     # imaginary-time to Matsubara frequency is working correctly
     ω = 1.1
     β = 5.5
@@ -268,4 +268,27 @@ using Statistics
 
     # println("length(Bτ) = ", length(Bτ))
     # println("length(Bωn) = ", length(Bωn))
+
+    # Check if jackknife cubic spline transform is working correctly
+    ϵ = 1.1
+    β = 5.4
+    Δτ = 0.1
+    Lτ = round(Int, β/Δτ)
+    τ = collect(range(start=0, stop=β, length=Lτ+1))
+    Gτ = @. inv(exp(τ*ϵ) + exp((τ-β)*ϵ))
+    Gτ = stack((Gτ for i in 1:10))
+    Nωn = 4*Lτ
+    n = collect(-Nωn:(Nωn-1))
+    ωn = @. (2n+1)*π/β
+    Gωn = @. inv(ϵ - im*ωn)
+    Gωn_int = zero(Gωn)
+    ΔGωn_int =  jackknife_cubic_spline_τ_to_ωn!(Gωn_int, Gτ, β, Δτ, spline_type = "C2", return_covariance_matrix = false)
+    ΔGωn = @. Gωn_int - Gωn
+    @test maximum(@. abs(real(ΔGωn)/real(Gωn)) ) < 1e-3
+    @test maximum(@. abs(imag(ΔGωn)/imag(Gωn)) ) < 1e-3
+    Gωn_int = zero(Gωn)
+    ΔGωn_int =  jackknife_cubic_spline_τ_to_ωn!(Gωn_int, Gτ, β, Δτ, spline_type = "C2", return_covariance_matrix = true)
+    ΔGωn = @. Gωn_int - Gωn
+    @test maximum(@. abs(real(ΔGωn)/real(Gωn)) ) < 1e-3
+    @test maximum(@. abs(imag(ΔGωn)/imag(Gωn)) ) < 1e-3
 end

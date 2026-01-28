@@ -62,7 +62,7 @@ include("matsubara_transforms/akima_spline.jl")
 include("matsubara_transforms/c2_cubic_spline.jl")
 include("matsubara_transforms/cubic_spline_transform.jl")
 @static if VERSION >= v"1.11"
-    export cubic_spline_τ_to_ωn!
+    export cubic_spline_τ_to_ωn!, jackknife_cubic_spline_τ_to_ωn!
 end
 
 end

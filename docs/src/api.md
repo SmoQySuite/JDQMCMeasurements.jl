@@ -37,6 +37,7 @@ measure_Nsqrd
 ## Utility Functions
 
 - [`cubic_spline_τ_to_ωn!`](@ref)
+- [`jackknife_cubic_spline_τ_to_ωn!`](@ref)
 - [`fourier_transform!`](@ref)
 - [`susceptibility!`](@ref)
 - [`susceptibility`](@ref)
@@ -44,6 +45,7 @@ measure_Nsqrd
 
 ```@docs
 cubic_spline_τ_to_ωn!
+jackknife_cubic_spline_τ_to_ωn!
 fourier_transform!
 susceptibility!
 susceptibility

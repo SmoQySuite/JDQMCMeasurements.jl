@@ -1,4 +1,89 @@
 @doc raw"""
+    jackknife_cubic_spline_τ_to_ωn!(
+        Cn::AbstractVector{Complex{E}},
+        Cτ::AbstractMatrix{T},
+        β::E, Δτ::E;
+        # KEYWORD ARGUMENTS
+        spline_type::String = "C2",
+        M1::T = NaN,
+        M2::T = NaN,
+        bias_corrected = false,
+        return_covariance_matrix = false
+    ) where {E<:AbstractFloat, T<:Number}
+
+Perform a jackknife error analysis on the cubic spline Matsubara transformation.
+This function takes as input a matrix `Cτ` of imaginary-time correlation functions,
+where each column corresponds to a separate sample, and the rows correspond to the imaginary-time points.
+Refer to [`cubic_spline_τ_to_ωn!`](@ref) for details on the Matsubara transformation itself, and more information
+on the meaning of the `spline_type`, `M1`, and `M2` keyword arguments.
+In addition to filling in the vector `Cn` with the mean Matsubara correlation function,
+this function also returns the corresponding standard error for each `Cn` value if `return_covariance_matrix = false`,
+and the full covariance matrix if `return_covariance_matrix = true`.
+"""
+function jackknife_cubic_spline_τ_to_ωn!(
+    Cn::AbstractVector{Complex{E}},
+    Cτ::AbstractMatrix{T},
+    β::E, Δτ::E;
+    # KEYWORD ARGUMENTS
+    spline_type::String = "C2",
+    M1::T = NaN,
+    M2::T = NaN,
+    bias_corrected = false,
+    return_covariance_matrix = false
+) where {E<:AbstractFloat, T<:Number}
+
+    # get number of samples
+    M = size(Cτ, 2)
+
+    # calculate mean Cτ curve
+    C̄τ = vec(mean(Cτ, dims=2))
+
+    # calculate mean Cn curve
+    cubic_spline_τ_to_ωn!(
+        Cn, C̄τ, β, Δτ;
+        spline_type = spline_type, M1 = M1, M2 = M2
+    )
+
+    # calculate jackknife sample means Cτ curves
+    Cτ_jackknife = @. (M * C̄τ - Cτ) / (M - 1)
+
+    # array to contain jackknife sample Cn values
+    Cn_jackknife = zeros(Complex{E}, length(Cn), M)
+
+    # perform Cτ to Cn transform for each jackknife sample mean
+    for m in axes(Cτ_jackknife, 2)
+        # get Cτ jackknife sample mean
+        Cτ_m = @view Cτ_jackknife[:, m]
+        # get Cn array
+        Cn_m = @view Cn_jackknife[:, m]
+        # perform tau to ωn transform
+        cubic_spline_τ_to_ωn!(
+            Cn_m, Cτ_m, β, Δτ;
+            spline_type = spline_type, M1 = M1, M2 = M2
+        )
+    end
+
+    # calculate full covariance matrix
+    if return_covariance_matrix
+        ΔC = cov(Cn_jackknife, dims=2, corrected=false)
+        @. ΔC = (M-1) * ΔC
+    # calculate the standard deviations
+    else
+        ΔC = var(Cn_jackknife, dims=2, corrected=false)
+        @. ΔC = sqrt((M-1) * ΔC)
+    end
+
+    # if bias corrected
+    if bias_corrected
+        C̄n_jackknife = mean(Cn_jackknife, dims=2)
+        @. Cn = M * Cn - (M-1) * C̄n_jackknife
+    end
+
+    return ΔC
+end
+
+
+@doc raw"""
     cubic_spline_τ_to_ωn!(
         Cn::AbstractVector{Complex{E}},
         Cτ::AbstractVector{T},
@@ -45,9 +130,11 @@ By default the are set to `NaN`, which results in them being calculated internal
 function data points and corresponding spline fit.
 """
 function cubic_spline_τ_to_ωn!(
+    # ARGUMENTS
     Cn::AbstractVector{Complex{E}},
     Cτ::AbstractVector{T},
     β::E, Δτ::E;
+    # KEYWORD ARGUMENTS
     spline_type::String = "C2",
     M1::T = NaN,
     M2::T = NaN
@@ -153,7 +240,7 @@ function fermionic_cubic_spline_τ_to_ωn!(
     Sp = @view tmp[N+1:2N] # for n ∈ [0,N-1]
     Sm = @view tmp[N:-1:1] # for n ∈ [-N,-1]
 
-    # get reducude discretization constant
+    # get reduced discretization constant
     Δτ′ = β/N
 
     # zero'th moment M₀ = C(β) + C(0)
@@ -188,7 +275,7 @@ function fermionic_cubic_spline_τ_to_ωn!(
     # if second moment M₂ not defined
     if isnan(M2)
 
-        # iterate of oringinal time slice
+        # iterate over original time slices
         @inbounds for l in 1:L
             # get polynomial coefficients
             cl, dl = c[l], d[l]
@@ -210,7 +297,7 @@ function fermionic_cubic_spline_τ_to_ωn!(
         # C(n) = C(n) + exp(iωₙ⋅Δτ′)/(iωₙ)³⋅F[Cₗ″(τₘ)]
         @views @. Cn += exp(1im*ωn_fermi(n,β)*Δτ′)/(1im*ωn_fermi(n,β))^3 * tmp
 
-        # iterate of oringinal time slice
+        # iterate over original time slices
         @inbounds for l in 1:L
             # get polynomial coefficients
             cl, dl = c[l], d[l]
@@ -237,7 +324,7 @@ function fermionic_cubic_spline_τ_to_ωn!(
         @. Cn += -M2/(1im*ωn_fermi(n,β))^3
     end
 
-    # iterate of oringinal time slice
+    # iterate over original time slices
     @inbounds for l in 1:L
         # get polynomial coefficients
         dl = d[l]
@@ -302,7 +389,7 @@ function bosonic_cubic_spline_τ_to_ωn!(
     Sp = @view tmp[N+1:2N+1] # for n ∈ [0,N]
     Sm = @view tmp[N+1:-1:1] # for n ∈ [-N,0]
 
-    # get reducude discretization constant
+    # get reduced discretization constant
     Δτ′ = β/(N+1)
 
     # zero'th moment M₀ = C(0) - C(β)
@@ -337,7 +424,7 @@ function bosonic_cubic_spline_τ_to_ωn!(
     # if second moment M₂ not defined
     if isnan(M2)
 
-        # iterate of oringinal time slice
+        # iterate over original time slices
         @inbounds for l in 1:L
             # get polynomial coefficients
             cl, dl = c[l], d[l]
@@ -358,7 +445,7 @@ function bosonic_cubic_spline_τ_to_ωn!(
         # C(n) = C(n) + exp(iωₙ⋅Δτ′)/(iωₙ)³⋅F[Cₗ″(τₘ)]
         @views @. Cn += exp(1im*ωn_bose_reg(n,β)*Δτ′)/(1im*ωn_bose_reg(n,β))^3 * tmp
 
-        # iterate of oringinal time slice
+        # iterate over original time slices
         @inbounds for l in 1:L
             # get polynomial coefficients
             cl, dl = c[l], d[l]
@@ -384,7 +471,7 @@ function bosonic_cubic_spline_τ_to_ωn!(
         @. Cn += -M2/(1im*ωn_bose_reg(n,β))^3
     end
 
-    # iterate of oringinal time slice
+    # iterate over original time slices
     @inbounds for l in 1:L
         # get polynomial coefficients
         dl = d[l]

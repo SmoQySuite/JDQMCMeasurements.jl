@@ -39,7 +39,7 @@ function c2_cubic_spline!(
     # # Calculate C″(0) using first order forward finite difference method
     # C″0 = (1*C[1]-2*C[2]+1*C[3])/Δτ^2
 
-    # Use C″(0) as boundary conditions and set top n=1 row of tridiagonal matrix
+    # Use C″(0) as boundary conditions and set top n=1 row of tri-diagonal matrix
     middle[1] = 2
     upper[1] = 1
     Cprime[1] = 3*S[1] - C″0*Δτ/2
@@ -50,15 +50,15 @@ function c2_cubic_spline!(
     # # Calculate C″(β) using first order backward finite difference method
     # C″β = (1*C[end]-2*C[end-1]+1*C[end-2])/Δτ^2
 
-    # Use C″(β) as boundary conditions and set bottom n=Lτ+1 row of tridiagonal matrix
+    # Use C″(β) as boundary conditions and set bottom n=Lτ+1 row of tri-diagonal matrix
     middle[end] = 2
     lower[end] = 1
     Cprime[end] = 3*S[end] + C″β*Δτ/2
     
-    # construct tridiagonal matrix
+    # construct tri-diagonal matrix
     tri = Tridiagonal(lower, middle, upper)
 
-    # solve C′(τ) = T⋅v(τ) where T is tridiagonal matrix
+    # solve C′(τ) = T⋅v(τ) where T is tri-diagonal matrix
     ldiv!(tri, Cprime)
 
     # calculate b, c, and d coefficients
